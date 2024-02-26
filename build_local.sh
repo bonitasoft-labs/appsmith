@@ -1,7 +1,7 @@
 # Prerequisite:
 #   server: Java 17
 #   client: Node 18
-#   generate_info_json.sh: jq 
+#   generate_info_json.sh: jq
 #   docker of course
 cd app/server
 mvn clean compile -DskipTests
@@ -15,7 +15,7 @@ yarn build
 
 cd packages/rts
 
-yarn instal
+yarn install
 yarn build
 
 cd ../../../..
