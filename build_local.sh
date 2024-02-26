@@ -8,7 +8,17 @@ mvn clean compile -DskipTests
 
 ./build.sh -DskipTests
 
-cd ../..
+cd ../client
+
+yarn install
+yarn build
+
+cd packages/rts
+
+yarn instal
+yarn build
+
+cd ../../../..
 
 scripts/generate_info_json.sh
 
