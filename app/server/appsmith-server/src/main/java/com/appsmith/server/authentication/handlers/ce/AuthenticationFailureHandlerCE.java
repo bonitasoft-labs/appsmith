@@ -20,7 +20,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import static com.appsmith.server.helpers.RedirectHelper.REDIRECT_URL_QUERY_PARAM;
+import static com.appsmith.server.helpers.RedirectHelper.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -81,6 +81,7 @@ public class AuthenticationFailureHandlerCE implements ServerAuthenticationFailu
     // this method constructs the redirect URL based on the exception type
     private String constructRedirectUrl(AuthenticationException exception, String originHeader, String redirectUrl) {
         String url = "";
+        log.error("### AuthentificationFailure: constructRedirectUrl {}", exception.getMessage());
         if (exception instanceof OAuth2AuthenticationException
                 && AppsmithError.SIGNUP_DISABLED
                         .getAppErrorCode()
