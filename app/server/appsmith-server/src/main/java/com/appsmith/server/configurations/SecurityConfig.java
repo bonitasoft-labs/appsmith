@@ -1,6 +1,7 @@
 package com.appsmith.server.configurations;
 
 import com.appsmith.server.authentication.handlers.AccessDeniedHandler;
+import com.appsmith.server.authentication.handlers.CustomServerOAuth2AuthorizationRequestResolver;
 import com.appsmith.server.authentication.oauth2clientrepositories.CustomOauth2ClientRepositoryManager;
 import com.appsmith.server.constants.FieldName;
 import com.appsmith.server.constants.Url;
@@ -160,14 +161,17 @@ public class SecurityConfig {
                 .frameOptions()
                 .disable()
                 .and()
-                .anonymous()
-                .principal(createAnonymousUser())
-                .and()
+                //                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                // @Bonita: With this lines, we are redirect on Appsmith login page
+                //                .anonymous()
+                //                .principal(createAnonymousUser())
+                //                .and()
                 // This returns 401 unauthorized for all requests that are not authenticated but authentication is
                 // required
                 // The client will redirect to the login page if we return 401 as Http status response
                 .exceptionHandling()
-                .authenticationEntryPoint(authenticationEntryPoint)
+                // @Bonita: comments to let keycloak handle the authentication
+                // .authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler)
                 .and()
                 .authorizeExchange()
@@ -219,8 +223,14 @@ public class SecurityConfig {
                 //         .authenticationFailureHandler(authenticationFailureHandler))
                 // For Github SSO Login, check transformation class: CustomOAuth2UserServiceImpl
                 // For Google SSO Login, check transformation class: CustomOAuth2UserServiceImpl
-                .oauth2Login(oAuth2LoginSpec ->
-                        oAuth2LoginSpec.authorizedClientRepository(new ClientUserRepository(userService, commonConfig)))
+                .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
+                        .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
+                                reactiveClientRegistrationRepository,
+                                commonConfig,
+                                redirectHelper,
+                                oauth2ClientManager))
+                        .authenticationSuccessHandler(authenticationSuccessHandler))
+
                 // .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
                 //         .authenticationFailureHandler(failureHandler)
                 //         .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
@@ -234,7 +244,6 @@ public class SecurityConfig {
                 // .logout()
                 // .logoutUrl(Url.LOGOUT_URL)
                 // .logoutSuccessHandler(new LogoutSuccessHandler(objectMapper, analyticsService))
-                // .and()
                 .build();
     }
 
