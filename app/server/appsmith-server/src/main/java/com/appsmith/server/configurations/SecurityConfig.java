@@ -1,15 +1,11 @@
 package com.appsmith.server.configurations;
 
 import com.appsmith.server.authentication.handlers.AccessDeniedHandler;
-import com.appsmith.server.authentication.handlers.CustomServerOAuth2AuthorizationRequestResolver;
-import com.appsmith.server.authentication.handlers.LogoutSuccessHandler;
 import com.appsmith.server.authentication.oauth2clientrepositories.CustomOauth2ClientRepositoryManager;
 import com.appsmith.server.constants.FieldName;
 import com.appsmith.server.constants.Url;
 import com.appsmith.server.domains.User;
 import com.appsmith.server.filters.CSRFFilter;
-import com.appsmith.server.filters.ConditionalFilter;
-import com.appsmith.server.filters.PreAuth;
 import com.appsmith.server.helpers.RedirectHelper;
 import com.appsmith.server.ratelimiting.RateLimitService;
 import com.appsmith.server.services.AnalyticsService;
@@ -32,7 +28,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
-import org.springframework.security.web.server.authentication.ServerAuthenticationEntryPointFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
@@ -49,19 +44,8 @@ import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 
-import static com.appsmith.server.constants.Url.ACTION_COLLECTION_URL;
-import static com.appsmith.server.constants.Url.ACTION_URL;
-import static com.appsmith.server.constants.Url.APPLICATION_URL;
-import static com.appsmith.server.constants.Url.ASSET_URL;
-import static com.appsmith.server.constants.Url.CUSTOM_JS_LIB_URL;
-import static com.appsmith.server.constants.Url.PAGE_URL;
-import static com.appsmith.server.constants.Url.PRODUCT_ALERT;
-import static com.appsmith.server.constants.Url.TENANT_URL;
-import static com.appsmith.server.constants.Url.THEME_URL;
-import static com.appsmith.server.constants.Url.USAGE_PULSE_URL;
-import static com.appsmith.server.constants.Url.USER_URL;
-import static com.appsmith.server.constants.ce.UrlCE.CONSOLIDATED_API_URL;
-import static java.time.temporal.ChronoUnit.DAYS;
+import static com.appsmith.server.constants.ce.UrlCE.*;
+import static java.time.temporal.ChronoUnit.*;
 
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
@@ -158,9 +142,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        ServerAuthenticationEntryPointFailureHandler failureHandler =
-                new ServerAuthenticationEntryPointFailureHandler(authenticationEntryPoint);
-
+        // ServerAuthenticationEntryPointFailureHandler failureHandler =
+        //        new ServerAuthenticationEntryPointFailureHandler(authenticationEntryPoint);
+        System.out.println("#################### BONITA 2#############################");
         return http
                 // The native CSRF solution doesn't work with WebFlux, yet, but only for WebMVC. So we make our own.
                 .csrf()
@@ -221,34 +205,36 @@ public class SecurityConfig {
                 .authenticated()
                 .and()
                 // Add Pre Auth rate limit filter before authentication filter
-                .addFilterBefore(
-                        new ConditionalFilter(new PreAuth(rateLimitService), Url.LOGIN_URL),
-                        SecurityWebFiltersOrder.FORM_LOGIN)
-                .httpBasic(httpBasicSpec -> httpBasicSpec.authenticationFailureHandler(failureHandler))
-                .formLogin(formLoginSpec -> formLoginSpec
-                        .authenticationFailureHandler(failureHandler)
-                        .loginPage(Url.LOGIN_URL)
-                        .authenticationEntryPoint(authenticationEntryPoint)
-                        .requiresAuthenticationMatcher(
-                                ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, Url.LOGIN_URL))
-                        .authenticationSuccessHandler(authenticationSuccessHandler)
-                        .authenticationFailureHandler(authenticationFailureHandler))
+                // .addFilterBefore(
+                //         new ConditionalFilter(new PreAuth(rateLimitService), Url.LOGIN_URL),
+                //         SecurityWebFiltersOrder.FORM_LOGIN)
+                // .httpBasic(httpBasicSpec -> httpBasicSpec.authenticationFailureHandler(failureHandler))
+                // .formLogin(formLoginSpec -> formLoginSpec
+                //         .authenticationFailureHandler(failureHandler)
+                //         .loginPage(Url.LOGIN_URL)
+                //         .authenticationEntryPoint(authenticationEntryPoint)
+                //         .requiresAuthenticationMatcher(
+                //                 ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, Url.LOGIN_URL))
+                //         .authenticationSuccessHandler(authenticationSuccessHandler)
+                //         .authenticationFailureHandler(authenticationFailureHandler))
                 // For Github SSO Login, check transformation class: CustomOAuth2UserServiceImpl
                 // For Google SSO Login, check transformation class: CustomOAuth2UserServiceImpl
-                .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
-                        .authenticationFailureHandler(failureHandler)
-                        .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
-                                reactiveClientRegistrationRepository,
-                                commonConfig,
-                                redirectHelper,
-                                oauth2ClientManager))
-                        .authenticationSuccessHandler(authenticationSuccessHandler)
-                        .authenticationFailureHandler(authenticationFailureHandler)
-                        .authorizedClientRepository(new ClientUserRepository(userService, commonConfig)))
-                .logout()
-                .logoutUrl(Url.LOGOUT_URL)
-                .logoutSuccessHandler(new LogoutSuccessHandler(objectMapper, analyticsService))
-                .and()
+                .oauth2Login(oAuth2LoginSpec ->
+                        oAuth2LoginSpec.authorizedClientRepository(new ClientUserRepository(userService, commonConfig)))
+                // .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
+                //         .authenticationFailureHandler(failureHandler)
+                //         .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
+                //                 reactiveClientRegistrationRepository,
+                //                 commonConfig,
+                //                 redirectHelper,
+                //                 oauth2ClientManager))
+                //         .authenticationSuccessHandler(authenticationSuccessHandler)
+                //         .authenticationFailureHandler(authenticationFailureHandler)
+                //         .authorizedClientRepository(new ClientUserRepository(userService, commonConfig)))
+                // .logout()
+                // .logoutUrl(Url.LOGOUT_URL)
+                // .logoutSuccessHandler(new LogoutSuccessHandler(objectMapper, analyticsService))
+                // .and()
                 .build();
     }
 
