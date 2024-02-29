@@ -2,6 +2,7 @@
 *.iml
 .env
 
+out
 stacks
 /deploy/docker/fs/opt/appsmith/info.json
 
