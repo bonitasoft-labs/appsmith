@@ -98,18 +98,56 @@ public class SetupAppsmith {
                         BASE_URL + "applications/import/" + workspaceId, "POST",
                         publisher.build(), "multipart/form-data; boundary=" + publisher.getBoundary());
                     if (importAppResponse.statusCode() == 200) {
-                        System.out.println("App " + appName + ":" + new JSONObject(importAppResponse.body()).getJSONObject("data").getJSONObject("application").getString("id") + " imported successfully");
+                        System.out.println("App " + appName + ":" +
+                            new JSONObject(importAppResponse.body()).getJSONObject("data")
+                                .getJSONObject("application").getString("id") + " imported successfully");
                     } else {
                         System.out.println("Failed to import app " + appName);
                         System.out.println(importAppResponse.body());
                     }
                 }
+            }
 
+            // Get the applications of the workspace
+            HttpResponse<String> appsResponse = httpTemplate.sendRequest(
+                BASE_URL + "applications/home?workspaceId=" + workspaceId, "GET",
+                null, "application/json");
+            JSONArray applications = null;
+            if (workspacesResponse.statusCode() == 200) {
+                JSONObject responseBodyApps = new JSONObject(appsResponse.body());
+                applications = responseBodyApps.getJSONArray("data");
+                if (applications.isEmpty()) {
+                    System.out.println("No apps found in the workspace");
+                }
+            }
+
+            // Publish an app
+            if (applications != null) {
+                String firstAppId = applications.getJSONObject(0).getString("id");
+                HttpResponse<String> publishResponse = httpTemplate.sendRequest(
+                    BASE_URL + "applications/publish/" + firstAppId, "POST",
+                    "", "application/json");
+                if (publishResponse.statusCode() == 200) {
+                    System.out.println("App " + firstAppId + " published successfully");
+                } else {
+                    System.out.println("Failed to publish app " + firstAppId);
+                }
+            }
+
+            // Export an app
+            if (applications != null) {
+                String firstAppId = applications.getJSONObject(0).getString("id");
+                HttpResponse<String> exportResponse = httpTemplate.sendRequest(
+                    BASE_URL + "applications/export/" + firstAppId, "GET",
+                    "", "application/json");
+                if (exportResponse.statusCode() == 200 && exportResponse.body() != null) {
+                    System.out.println("App " + firstAppId + " exported successfully");
+                } else {
+                    System.out.println("Failed to export app " + firstAppId);
+                }
             }
         }
-
     }
-
 }
 
 class HttpTemplate {
