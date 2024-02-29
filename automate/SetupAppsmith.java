@@ -26,7 +26,7 @@ public class SetupAppsmith {
         // login User
         HttpResponse<String> loginResponse = httpTemplate.sendRequest(
             "https://apps.haroun.dev/api/v1/login", "POST",
-            "username=me%40haroun.dev&password=123123",
+            "username=meee1%40haroun.dev&password=123123",
             "application/x-www-form-urlencoded");
         System.out.println("response code: " + loginResponse.statusCode());
         Optional<String> sessionCookie = loginResponse.headers().firstValue("Set-Cookie");
@@ -36,6 +36,22 @@ public class SetupAppsmith {
 
         } else {
             System.out.println("User login failed");
+            // create user
+            System.out.println("Try Create the user first");
+            HttpResponse<String> createUserResponse = httpTemplate.sendRequest(
+                "https://apps.haroun.dev/api/v1/users", "POST",
+                "email=meee1%40haroun.dev&password=123123",
+                "application/x-www-form-urlencoded");
+            System.out.println("response code: " + loginResponse.statusCode());
+            sessionCookie = createUserResponse.headers().firstValue("Set-Cookie");
+            if (sessionCookie.isPresent()) {
+                System.out.println("User creation & login success");
+                httpTemplate.setCookie(sessionCookie.get());
+
+            } else {
+                System.out.println("User creation failed");
+                return;
+            }
         }
 
         HttpResponse<String> workspacesResponse = httpTemplate.sendRequest(
