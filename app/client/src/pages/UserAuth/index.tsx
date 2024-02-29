@@ -24,6 +24,7 @@ export function UserAuth() {
   const lightTheme = useSelector((state: AppState) =>
     getThemeDetails(state, ThemeMode.LIGHT),
   );
+  //force backend call in order for the backend app authentication mechanism to be called
   const history = useHistory();
   history.go(0);
 

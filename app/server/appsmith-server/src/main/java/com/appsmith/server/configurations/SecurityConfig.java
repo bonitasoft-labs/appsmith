@@ -26,11 +26,13 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.client.oidc.web.server.logout.OidcClientInitiatedServerLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
+import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -91,6 +93,9 @@ public class SecurityConfig {
 
     @Value("${appsmith.internal.password}")
     private String INTERNAL_PASSWORD;
+
+    /*@Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
+    private String OIDC_ISSUER_URI*/
 
     private static final String INTERNAL = "INTERNAL";
 
@@ -161,8 +166,10 @@ public class SecurityConfig {
                 .frameOptions()
                 .disable()
                 .and()
-                //                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-                // @Bonita: With this lines, we are redirect on Appsmith login page
+                // @Bonita: necessary only if we need to remove the anonymous user
+                // .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                // @Bonita: Anonymous auth is used in all public pages and front-end redirects to Appsmith login page
+                // when accessing a protected page with an anonymous user
                 .anonymous()
                 .principal(createAnonymousUser())
                 .and()
@@ -208,6 +215,7 @@ public class SecurityConfig {
                 .anyExchange()
                 .authenticated()
                 .and()
+                // @Bonita: only keep OIDC login and remove any other login method and login form
                 // Add Pre Auth rate limit filter before authentication filter
                 // .addFilterBefore(
                 //         new ConditionalFilter(new PreAuth(rateLimitService), Url.LOGIN_URL),
@@ -230,7 +238,6 @@ public class SecurityConfig {
                                 redirectHelper,
                                 oauth2ClientManager))
                         .authenticationSuccessHandler(authenticationSuccessHandler))
-
                 // .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
                 //         .authenticationFailureHandler(failureHandler)
                 //         .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
@@ -241,10 +248,25 @@ public class SecurityConfig {
                 //         .authenticationSuccessHandler(authenticationSuccessHandler)
                 //         .authenticationFailureHandler(authenticationFailureHandler)
                 //         .authorizedClientRepository(new ClientUserRepository(userService, commonConfig)))
+                .logout((logout) -> logout.logoutUrl(Url.LOGOUT_URL).logoutSuccessHandler(oidcLogoutSuccessHandler()))
                 // .logout()
                 // .logoutUrl(Url.LOGOUT_URL)
                 // .logoutSuccessHandler(new LogoutSuccessHandler(objectMapper, analyticsService))
+                // .and()
                 .build();
+    }
+
+    /**
+     * @Bonita: Logout handler used to handle the OIDC front-channel logout
+     */
+    private ServerLogoutSuccessHandler oidcLogoutSuccessHandler() {
+        OidcClientInitiatedServerLogoutSuccessHandler oidcLogoutSuccessHandler =
+                new OidcClientInitiatedServerLogoutSuccessHandler(reactiveClientRegistrationRepository);
+        // Sets the location that the End-User's User Agent will be redirected to after the logout
+        // TODO: have the frontend logout button send the currc k  k    ent URL in the query params and use it here
+        oidcLogoutSuccessHandler.setPostLogoutRedirectUri("/user/login");
+
+        return oidcLogoutSuccessHandler;
     }
 
     /**
