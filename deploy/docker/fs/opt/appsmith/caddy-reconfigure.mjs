@@ -98,8 +98,8 @@ parts.push(`
     rewrite * /info.json
     import file_server
   }
-
-  @backend path /api/* /oauth2/* /login/*
+  // TODO @Bonita: Check if we can use /login/* instead of /user/login
+  @backend path /api/* /oauth2/* /login/* /user/login
   handle @backend {
     import reverse_proxy 8080
   }

@@ -145,7 +145,7 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         // ServerAuthenticationEntryPointFailureHandler failureHandler =
         //        new ServerAuthenticationEntryPointFailureHandler(authenticationEntryPoint);
-        System.out.println("#################### BONITA 2#############################");
+        System.out.println("#################### BONITA 3#############################");
         return http
                 // The native CSRF solution doesn't work with WebFlux, yet, but only for WebMVC. So we make our own.
                 .csrf()
@@ -163,9 +163,9 @@ public class SecurityConfig {
                 .and()
                 //                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 // @Bonita: With this lines, we are redirect on Appsmith login page
-                //                .anonymous()
-                //                .principal(createAnonymousUser())
-                //                .and()
+                .anonymous()
+                .principal(createAnonymousUser())
+                .and()
                 // This returns 401 unauthorized for all requests that are not authenticated but authentication is
                 // required
                 // The client will redirect to the login page if we return 401 as Http status response
