@@ -94,7 +94,7 @@ export class UserApi extends Api {
   static confirmUserInviteURL = `${UserApi.inviteUserURL}/confirm`;
   static addWorkspaceURL = `${UserApi.usersURL}/addWorkspace`;
   static leaveWorkspaceURL = `${UserApi.usersURL}/leaveWorkspace`;
-  static logoutURL = "v1/logout";
+  static logoutURL = "logout";
   static currentUserURL = "v1/users/me";
   static photoURL = "v1/users/photo";
   static featureFlagsURL = "v1/users/features";
@@ -163,7 +163,10 @@ export class UserApi extends Api {
   }
 
   static async logoutUser(): Promise<AxiosPromise<ApiResponse>> {
-    return Api.post(UserApi.logoutURL);
+    return Api.post(UserApi.logoutURL, null, null, {
+      baseURL: "/",
+      }
+    );
   }
 
   static async uploadPhoto(request: { file: File }): Promise<

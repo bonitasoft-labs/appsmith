@@ -147,10 +147,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        // ServerAuthenticationEntryPointFailureHandler failureHandler =
-        //        new ServerAuthenticationEntryPointFailureHandler(authenticationEntryPoint);
-        System.out.println("#################### BONITA 3#############################");
+    @Order(1)
+    public SecurityWebFilterChain securityApiFilterChain(ServerHttpSecurity http) {
+        System.out.println("#################### BONITA - API #############################");
         return http
                 // The native CSRF solution doesn't work with WebFlux, yet, but only for WebMVC. So we make our own.
                 .csrf()
@@ -173,14 +172,15 @@ public class SecurityConfig {
                 .anonymous()
                 .principal(createAnonymousUser())
                 .and()
-                // This returns 401 unauthorized for all requests that are not authenticated but authentication is
-                // required
-                // The client will redirect to the login page if we return 401 as Http status response
                 .exceptionHandling()
                 // @Bonita: comments to let keycloak handle the authentication
                 // .authenticationEntryPoint(authenticationEntryPoint)
+                // This returns 401 unauthorized for all requests that are not authenticated but authentication is
+                // required
+                // The client will redirect to the login page if we return 401 as Http status response
                 .accessDeniedHandler(accessDeniedHandler)
                 .and()
+                .securityMatcher(new PathPatternParserServerWebExchangeMatcher("/api/**"))
                 .authorizeExchange()
                 .matchers(
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, Url.LOGIN_URL),
@@ -210,6 +210,41 @@ public class SecurityConfig {
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, PRODUCT_ALERT + "/alert"),
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, CONSOLIDATED_API_URL + "/view"))
                 .permitAll()
+                .anyExchange()
+                .authenticated()
+                .and()
+                .oauth2ResourceServer(oauth2ResourceServerSpec -> oauth2ResourceServerSpec.jwt())
+                .build();
+    }
+
+    @Bean
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        // ServerAuthenticationEntryPointFailureHandler failureHandler =
+        //        new ServerAuthenticationEntryPointFailureHandler(authenticationEntryPoint);
+        System.out.println("#################### BONITA 3#############################");
+        return http
+                // The native CSRF solution doesn't work with WebFlux, yet, but only for WebMVC. So we make our own.
+                .csrf()
+                .disable()
+                .addFilterAt(new CSRFFilter(), SecurityWebFiltersOrder.CSRF)
+                // Default security headers configuration from
+                // https://docs.spring.io/spring-security/site/docs/5.0.x/reference/html/headers.html
+                .headers()
+                // Disabled here because add it in NGINX instead.
+                .contentTypeOptions()
+                .disable()
+                // Disabled because we use CSP's `frame-ancestors` instead.
+                .frameOptions()
+                .disable()
+                .and()
+                // @Bonita: necessary only if we need to remove the anonymous user
+                // .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                // @Bonita: Anonymous auth is used in all public pages and front-end redirects to Appsmith login page
+                // when accessing a protected page with an anonymous user
+                .anonymous()
+                .principal(createAnonymousUser())
+                .and()
+                .authorizeExchange()
                 .pathMatchers("/public/**", "/oauth2/**")
                 .permitAll()
                 .anyExchange()
@@ -258,12 +293,13 @@ public class SecurityConfig {
 
     /**
      * @Bonita: Logout handler used to handle the OIDC front-channel logout
+     * TODO: replace with back-channel logout once app smith Spring Boot update PR is merged
      */
     private ServerLogoutSuccessHandler oidcLogoutSuccessHandler() {
         OidcClientInitiatedServerLogoutSuccessHandler oidcLogoutSuccessHandler =
                 new OidcClientInitiatedServerLogoutSuccessHandler(reactiveClientRegistrationRepository);
         // Sets the location that the End-User's User Agent will be redirected to after the logout
-        // TODO: have the frontend logout button send the currc k  k    ent URL in the query params and use it here
+        // TODO: have the frontend logout button send the current URL in the query params and use it here
         oidcLogoutSuccessHandler.setPostLogoutRedirectUri("/user/login");
 
         return oidcLogoutSuccessHandler;
