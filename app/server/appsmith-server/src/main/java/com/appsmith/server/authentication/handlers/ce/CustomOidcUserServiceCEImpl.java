@@ -47,6 +47,10 @@ public class CustomOidcUserServiceCEImpl extends OidcReactiveOAuth2UserService {
     public Mono<User> checkAndCreateUser(OidcUser oidcUser, OidcUserRequest userRequest) {
         log.debug("#### In checkAndCreateUser getName {}", oidcUser.getName());
         log.debug("#### In checkAndCreateUser getEmail {}", oidcUser.getEmail());
+        log.debug("#### In checkAndCreateUser getIdToken {}", oidcUser.getIdToken());
+        log.debug(
+                "#### In checkAndCreateUser getTokenValue {}",
+                oidcUser.getIdToken().getTokenValue());
 
         String username = (!StringUtils.isEmpty(oidcUser.getEmail())) ? oidcUser.getEmail() : oidcUser.getName();
 
@@ -74,6 +78,11 @@ public class CustomOidcUserServiceCEImpl extends OidcReactiveOAuth2UserService {
                         user.setIsEnabled(true);
                         return repository.save(user);
                     }
+                    return Mono.just(user);
+                })
+                //@Bonita: keep ID token (necessary for log out)
+                .flatMap(user -> {
+                    user.setIdToken(oidcUser.getIdToken());
                     return Mono.just(user);
                 })
                 .onErrorMap(

@@ -298,6 +298,7 @@ public class SecurityConfig {
     private ServerLogoutSuccessHandler oidcLogoutSuccessHandler() {
         OidcClientInitiatedServerLogoutSuccessHandler oidcLogoutSuccessHandler =
                 new OidcClientInitiatedServerLogoutSuccessHandler(reactiveClientRegistrationRepository);
+
         // Sets the location that the End-User's User Agent will be redirected to after the logout
         // TODO: have the frontend logout button send the current URL in the query params and use it here
         oidcLogoutSuccessHandler.setPostLogoutRedirectUri("/user/login");
