@@ -2,6 +2,7 @@ package com.appsmith.server.configurations;
 
 import com.appsmith.server.authentication.handlers.AccessDeniedHandler;
 import com.appsmith.server.authentication.handlers.CustomServerOAuth2AuthorizationRequestResolver;
+import com.appsmith.server.authentication.handlers.ce.OidcClientInitiatedServerLogoutSuccessHandlerBO;
 import com.appsmith.server.authentication.oauth2clientrepositories.CustomOauth2ClientRepositoryManager;
 import com.appsmith.server.constants.FieldName;
 import com.appsmith.server.constants.Url;
@@ -26,7 +27,6 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.client.oidc.web.server.logout.OidcClientInitiatedServerLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
@@ -174,7 +174,7 @@ public class SecurityConfig {
                 .and()
                 .exceptionHandling()
                 // @Bonita: comments to let keycloak handle the authentication
-                // .authenticationEntryPoint(authenticationEntryPoint)
+                .authenticationEntryPoint(authenticationEntryPoint)
                 // This returns 401 unauthorized for all requests that are not authenticated but authentication is
                 // required
                 // The client will redirect to the login page if we return 401 as Http status response
@@ -213,7 +213,7 @@ public class SecurityConfig {
                 .anyExchange()
                 .authenticated()
                 .and()
-                .oauth2ResourceServer(oauth2ResourceServerSpec -> oauth2ResourceServerSpec.jwt())
+                // .oauth2ResourceServer(oauth2ResourceServerSpec -> oauth2ResourceServerSpec.jwt())
                 .build();
     }
 
@@ -223,10 +223,6 @@ public class SecurityConfig {
         //        new ServerAuthenticationEntryPointFailureHandler(authenticationEntryPoint);
         System.out.println("#################### BONITA 3#############################");
         return http
-                // The native CSRF solution doesn't work with WebFlux, yet, but only for WebMVC. So we make our own.
-                .csrf()
-                .disable()
-                .addFilterAt(new CSRFFilter(), SecurityWebFiltersOrder.CSRF)
                 // Default security headers configuration from
                 // https://docs.spring.io/spring-security/site/docs/5.0.x/reference/html/headers.html
                 .headers()
@@ -296,8 +292,8 @@ public class SecurityConfig {
      * TODO: replace with back-channel logout once app smith Spring Boot update PR is merged
      */
     private ServerLogoutSuccessHandler oidcLogoutSuccessHandler() {
-        OidcClientInitiatedServerLogoutSuccessHandler oidcLogoutSuccessHandler =
-                new OidcClientInitiatedServerLogoutSuccessHandler(reactiveClientRegistrationRepository);
+        OidcClientInitiatedServerLogoutSuccessHandlerBO oidcLogoutSuccessHandler =
+                new OidcClientInitiatedServerLogoutSuccessHandlerBO(reactiveClientRegistrationRepository);
 
         // Sets the location that the End-User's User Agent will be redirected to after the logout
         // TODO: have the frontend logout button send the current URL in the query params and use it here

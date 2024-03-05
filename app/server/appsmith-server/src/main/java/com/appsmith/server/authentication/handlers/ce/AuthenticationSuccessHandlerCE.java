@@ -362,7 +362,7 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
     }
 
     protected Mono<Application> createDefaultApplication(String defaultWorkspaceId, Authentication authentication) {
-
+        // @Bonita: Check for production mode to import right apps
         // need to create default application
         Application application = new Application();
         application.setWorkspaceId(defaultWorkspaceId);
@@ -395,7 +395,6 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
                                 });
                     });
         }
-
         return applicationMono.flatMap(application1 -> applicationPageService.createApplication(application1));
     }
 

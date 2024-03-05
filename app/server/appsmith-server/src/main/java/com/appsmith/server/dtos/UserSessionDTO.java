@@ -43,6 +43,8 @@ public class UserSessionDTO {
 
     private String currentWorkspaceId;
 
+    private String idTokenValue;
+
     private Set<String> workspaceIds;
 
     private String tenantId;
@@ -55,7 +57,7 @@ public class UserSessionDTO {
 
     private static final String PASSWORD_PROVIDER = "password";
 
-    private static final Set<String> ALLOWED_OAUTH_PROVIDERS = LoginSource.getNonFormSources();
+    public static final Set<String> ALLOWED_OAUTH_PROVIDERS = LoginSource.getNonFormSources();
 
     /**
      * We don't expect this class to be instantiated outside this class. Remove this constructor when needed.
@@ -96,6 +98,9 @@ public class UserSessionDTO {
         if (authentication instanceof OAuth2AuthenticationToken) {
             session.authorizedClientRegistrationId =
                     ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
+            // @Bonita store a string instead of the oidc token
+            session.idTokenValue = user.getIdTokenValue();
+
         } else if (authentication instanceof UsernamePasswordAuthenticationToken) {
             session.authorizedClientRegistrationId = PASSWORD_PROVIDER;
         } else {
@@ -136,6 +141,7 @@ public class UserSessionDTO {
             return new UsernamePasswordAuthenticationToken(user, credentials, authorities);
 
         } else if (ALLOWED_OAUTH_PROVIDERS.contains(authorizedClientRegistrationId)) {
+            user.setIdTokenValue(idTokenValue);
             return new OAuth2AuthenticationToken(user, authorities, authorizedClientRegistrationId);
         }
 

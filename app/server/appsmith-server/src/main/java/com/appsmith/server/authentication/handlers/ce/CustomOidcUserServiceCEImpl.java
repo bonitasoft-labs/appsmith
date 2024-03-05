@@ -80,9 +80,9 @@ public class CustomOidcUserServiceCEImpl extends OidcReactiveOAuth2UserService {
                     }
                     return Mono.just(user);
                 })
-                //@Bonita: keep ID token (necessary for log out)
+                // @Bonita: keep ID token (necessary for log out)
                 .flatMap(user -> {
-                    user.setIdToken(oidcUser.getIdToken());
+                    user.setIdTokenValue(oidcUser.getIdToken().getTokenValue());
                     return Mono.just(user);
                 })
                 .onErrorMap(
