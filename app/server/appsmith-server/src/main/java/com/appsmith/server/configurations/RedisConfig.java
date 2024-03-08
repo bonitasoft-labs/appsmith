@@ -205,9 +205,11 @@ public class RedisConfig {
 
         @Override
         public byte[] serialize(Object t) {
+            log.debug("### serialize SecurityContext");
             if (t instanceof SecurityContext) {
                 final UserSessionDTO session = UserSessionDTO.fromToken(((SecurityContext) t).getAuthentication());
                 final byte[] bytes = jsonSerializer.serialize(session);
+                log.debug("### serialize SecurityContext {}", session.getAuthorizedClientRegistrationId());
                 return bytes == null ? null : ByteUtils.concat(SESSION_DATA_PREFIX, bytes);
 
             } else if ((t instanceof Map)) {
@@ -262,7 +264,7 @@ public class RedisConfig {
                 if (session == null) {
                     throw new IllegalArgumentException("Could not deserialize user session, got null");
                 }
-
+                log.debug("### deserialize {}", session.getAuthorizedClientRegistrationId());
                 return new SecurityContextImpl(session.makeToken());
 
             } else if (ByteUtils.startsWith(bytes, OAUTH_CLIENT_PREFIX)) {

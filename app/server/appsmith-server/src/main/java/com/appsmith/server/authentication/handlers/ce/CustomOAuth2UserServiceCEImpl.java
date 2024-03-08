@@ -56,6 +56,7 @@ public class CustomOAuth2UserServiceCEImpl extends DefaultReactiveOAuth2UserServ
                     newUser.setSource(loginSource);
                     newUser.setState(UserState.ACTIVATED);
                     newUser.setIsEnabled(true);
+                    newUser.setIsAnonymous(false);
 
                     return userService.create(newUser);
                 }))

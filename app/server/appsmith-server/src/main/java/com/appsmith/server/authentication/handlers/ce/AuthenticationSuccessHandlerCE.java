@@ -168,6 +168,7 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
          * Send email verification mail with the redirect url
          * Redirects the user to verificationPending screen
          */
+        log.debug("### postVerificationRequiredHandler {}", user.getEmail());
         return webFilterExchange.getExchange().getSession().flatMap(webSession -> {
             webSession.getAttributes().remove(DEFAULT_SPRING_SECURITY_CONTEXT_ATTR_NAME);
             return redirectHelper
@@ -323,6 +324,7 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
                     monos.add(userDataService.ensureViewedCurrentVersionReleaseNotes(currentUser));
 
                     String modeOfLogin = FieldName.FORM_LOGIN;
+                    log.debug("### modeOfLogin {}", modeOfLogin);
                     if (authentication instanceof OAuth2AuthenticationToken) {
                         modeOfLogin = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
                     }

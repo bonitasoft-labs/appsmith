@@ -1,9 +1,11 @@
 package com.appsmith.server.dtos;
 
+import com.appsmith.server.configurations.bonita.BonitaDevAuthentificationToken;
 import com.appsmith.server.domains.LoginSource;
 import com.appsmith.server.domains.User;
 import com.appsmith.server.domains.UserState;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,6 +21,7 @@ import java.util.Set;
  * change/evolve in the future, as long as pre-existing JSON session data can be safely deserialized.
  */
 @Data
+@Slf4j
 public class UserSessionDTO {
 
     private String userId;
@@ -56,6 +59,7 @@ public class UserSessionDTO {
     private String authorizedClientRegistrationId;
 
     private static final String PASSWORD_PROVIDER = "password";
+    private static final String BONITA_DEV_PROVIDER = "bonitaDev";
 
     public static final Set<String> ALLOWED_OAUTH_PROVIDERS = LoginSource.getNonFormSources();
 
@@ -95,14 +99,17 @@ public class UserSessionDTO {
         session.credentials = authentication.getCredentials();
         session.authorities = authentication.getAuthorities();
 
+        log.debug("### fromToken {}", authentication.getClass().getName());
         if (authentication instanceof OAuth2AuthenticationToken) {
             session.authorizedClientRegistrationId =
                     ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
             // @Bonita store a string instead of the oidc token
             session.idTokenValue = user.getIdTokenValue();
-
         } else if (authentication instanceof UsernamePasswordAuthenticationToken) {
             session.authorizedClientRegistrationId = PASSWORD_PROVIDER;
+        } else if (authentication instanceof BonitaDevAuthentificationToken) {
+            log.debug("### BONITA_DEV_PROVIDER {}", authentication.getClass().getName());
+            session.authorizedClientRegistrationId = BONITA_DEV_PROVIDER;
         } else {
             throw new IllegalArgumentException("Unsupported authentication type: "
                     + authentication.getClass().getName());
@@ -136,13 +143,16 @@ public class UserSessionDTO {
         user.setTenantId(tenantId);
         user.setEmailVerified(Boolean.TRUE.equals(emailVerified));
         user.setEmailVerificationRequired(Boolean.TRUE.equals(emailVerificationRequired));
-
+        log.debug("### makeToken {}", authorizedClientRegistrationId);
         if (PASSWORD_PROVIDER.equals(authorizedClientRegistrationId)) {
             return new UsernamePasswordAuthenticationToken(user, credentials, authorities);
-
         } else if (ALLOWED_OAUTH_PROVIDERS.contains(authorizedClientRegistrationId)) {
+            log.debug("### ALLOWED_OAUTH_PROVIDERS {}", idTokenValue);
             user.setIdTokenValue(idTokenValue);
             return new OAuth2AuthenticationToken(user, authorities, authorizedClientRegistrationId);
+        } else if (BONITA_DEV_PROVIDER.equals(authorizedClientRegistrationId)) {
+            log.debug("### BONITA_DEV_PROVIDER {}", authorizedClientRegistrationId);
+            return new BonitaDevAuthentificationToken(user, authorities);
         }
 
         throw new IllegalArgumentException("Invalid registration ID " + authorizedClientRegistrationId);

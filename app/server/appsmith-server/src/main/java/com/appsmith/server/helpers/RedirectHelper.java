@@ -7,6 +7,7 @@ import com.appsmith.server.domains.ApplicationPage;
 import com.appsmith.server.repositories.ApplicationRepository;
 import com.appsmith.server.solutions.ApplicationPermission;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.web.server.DefaultServerRedirectStrategy;
@@ -25,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class RedirectHelper {
 
     public static final String DEFAULT_REDIRECT_URL = "/applications";
@@ -232,7 +234,7 @@ public class RedirectHelper {
 
         // On authentication success, we send a redirect to the client's home page. This ensures that the session
         // is set in the cookie on the browser.
-
+        log.debug("### handleRedirect: isFormSignup {}", isFromSignup);
         return getAuthSuccessRedirectUrl(webFilterExchange, defaultApplication, isFromSignup)
                 .map(URI::create)
                 .flatMap(redirectUri -> redirectStrategy.sendRedirect(exchange, redirectUri));

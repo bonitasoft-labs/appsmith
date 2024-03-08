@@ -1,9 +1,10 @@
 package com.appsmith.server.configurations;
 
-import com.appsmith.server.authentication.handlers.AccessDeniedHandler;
-import com.appsmith.server.authentication.handlers.CustomServerOAuth2AuthorizationRequestResolver;
+import com.appsmith.server.authentication.handlers.*;
 import com.appsmith.server.authentication.handlers.ce.OidcClientInitiatedServerLogoutSuccessHandlerBO;
 import com.appsmith.server.authentication.oauth2clientrepositories.CustomOauth2ClientRepositoryManager;
+import com.appsmith.server.configurations.bonita.BonitaProperties;
+import com.appsmith.server.configurations.bonita.ReactiveAuthenticationManagerBonitaImpl;
 import com.appsmith.server.constants.FieldName;
 import com.appsmith.server.constants.Url;
 import com.appsmith.server.domains.User;
@@ -30,9 +31,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -90,6 +93,12 @@ public class SecurityConfig {
 
     @Autowired
     private CustomOauth2ClientRepositoryManager oauth2ClientManager;
+
+    @Autowired
+    private ReactiveAuthenticationManagerBonitaImpl reactiveAuthenticationManagerBonitaImpl;
+
+    @Autowired
+    private BonitaProperties bonitaProperties;
 
     @Value("${appsmith.internal.password}")
     private String INTERNAL_PASSWORD;
@@ -166,7 +175,7 @@ public class SecurityConfig {
                 .disable()
                 .and()
                 // @Bonita: necessary only if we need to remove the anonymous user
-                // .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                // .securityContextRepository(new WebSessionServerSecurityContextRepository())
                 // @Bonita: Anonymous auth is used in all public pages and front-end redirects to Appsmith login page
                 // when accessing a protected page with an anonymous user
                 .anonymous()
@@ -213,7 +222,6 @@ public class SecurityConfig {
                 .anyExchange()
                 .authenticated()
                 .and()
-                // .oauth2ResourceServer(oauth2ResourceServerSpec -> oauth2ResourceServerSpec.jwt())
                 .build();
     }
 
@@ -221,8 +229,8 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         // ServerAuthenticationEntryPointFailureHandler failureHandler =
         //        new ServerAuthenticationEntryPointFailureHandler(authenticationEntryPoint);
-        System.out.println("#################### BONITA 3#############################");
-        return http
+        System.out.println("#################### BONITA 4 #############################");
+        ServerHttpSecurity.AuthorizeExchangeSpec authorizeExchangeSpec = http
                 // Default security headers configuration from
                 // https://docs.spring.io/spring-security/site/docs/5.0.x/reference/html/headers.html
                 .headers()
@@ -244,47 +252,75 @@ public class SecurityConfig {
                 .pathMatchers("/public/**", "/oauth2/**")
                 .permitAll()
                 .anyExchange()
-                .authenticated()
-                .and()
-                // @Bonita: only keep OIDC login and remove any other login method and login form
-                // Add Pre Auth rate limit filter before authentication filter
-                // .addFilterBefore(
-                //         new ConditionalFilter(new PreAuth(rateLimitService), Url.LOGIN_URL),
-                //         SecurityWebFiltersOrder.FORM_LOGIN)
-                // .httpBasic(httpBasicSpec -> httpBasicSpec.authenticationFailureHandler(failureHandler))
-                // .formLogin(formLoginSpec -> formLoginSpec
-                //         .authenticationFailureHandler(failureHandler)
-                //         .loginPage(Url.LOGIN_URL)
-                //         .authenticationEntryPoint(authenticationEntryPoint)
-                //         .requiresAuthenticationMatcher(
-                //                 ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, Url.LOGIN_URL))
-                //         .authenticationSuccessHandler(authenticationSuccessHandler)
-                //         .authenticationFailureHandler(authenticationFailureHandler))
-                // For Github SSO Login, check transformation class: CustomOAuth2UserServiceImpl
-                // For Google SSO Login, check transformation class: CustomOAuth2UserServiceImpl
-                .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
-                        .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
-                                reactiveClientRegistrationRepository,
-                                commonConfig,
-                                redirectHelper,
-                                oauth2ClientManager))
-                        .authenticationSuccessHandler(authenticationSuccessHandler))
-                // .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
-                //         .authenticationFailureHandler(failureHandler)
-                //         .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
-                //                 reactiveClientRegistrationRepository,
-                //                 commonConfig,
-                //                 redirectHelper,
-                //                 oauth2ClientManager))
-                //         .authenticationSuccessHandler(authenticationSuccessHandler)
-                //         .authenticationFailureHandler(authenticationFailureHandler)
-                //         .authorizedClientRepository(new ClientUserRepository(userService, commonConfig)))
-                .logout((logout) -> logout.logoutUrl(Url.LOGOUT_URL).logoutSuccessHandler(oidcLogoutSuccessHandler()))
-                // .logout()
-                // .logoutUrl(Url.LOGOUT_URL)
-                // .logoutSuccessHandler(new LogoutSuccessHandler(objectMapper, analyticsService))
-                // .and()
-                .build();
+                .authenticated();
+
+        // If avec la variable d'env si mode dev ou prod
+        // WebFlux - ReactiveAuthentificationManager => support Username password token
+        //
+        // https://stackoverflow.com/questions/54428840/can-i-use-an-api-call-to-authenticate-to-a-different-application-with-spring-sec
+        // Username password token de l'objet UserDTO
+        if (isBonitaDev()) {
+            AuthenticationWebFilter authenticationFilter =
+                    new TempAuthenticationWebFilter(this.reactiveAuthenticationManagerBonitaImpl);
+            authenticationFilter.setServerAuthenticationConverter(
+                    new ServerAuthenticationConverterBonitaDev("dev.local@mail.com"));
+            authenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+            authenticationFilter.setSecurityContextRepository(new WebSessionServerSecurityContextRepository());
+
+            authorizeExchangeSpec
+                    .and()
+                    .addFilterAt(authenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                    .authenticationManager(this.reactiveAuthenticationManagerBonitaImpl);
+
+        } else {
+            authorizeExchangeSpec
+                    .and()
+                    // @Bonita: only keep OIDC login and remove any other login method and login form
+                    // Add Pre Auth rate limit filter before authentication filter
+                    // .addFilterBefore(
+                    //         new ConditionalFilter(new PreAuth(rateLimitService), Url.LOGIN_URL),
+                    //         SecurityWebFiltersOrder.FORM_LOGIN)
+                    // .httpBasic(httpBasicSpec -> httpBasicSpec.authenticationFailureHandler(failureHandler))
+                    // .formLogin(formLoginSpec -> formLoginSpec
+                    //         .authenticationFailureHandler(failureHandler)
+                    //         .loginPage(Url.LOGIN_URL)
+                    //         .authenticationEntryPoint(authenticationEntryPoint)
+                    //         .requiresAuthenticationMatcher(
+                    //                 ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, Url.LOGIN_URL))
+                    //         .authenticationSuccessHandler(authenticationSuccessHandler)
+                    //         .authenticationFailureHandler(authenticationFailureHandler))
+                    // For Github SSO Login, check transformation class: CustomOAuth2UserServiceImpl
+                    // For Google SSO Login, check transformation class: CustomOAuth2UserServiceImpl
+                    .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
+                            .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
+                                    reactiveClientRegistrationRepository,
+                                    commonConfig,
+                                    redirectHelper,
+                                    oauth2ClientManager))
+                            .authenticationSuccessHandler(authenticationSuccessHandler))
+                    // .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
+                    //         .authenticationFailureHandler(failureHandler)
+                    //         .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
+                    //                 reactiveClientRegistrationRepository,
+                    //                 commonConfig,
+                    //                 redirectHelper,
+                    //                 oauth2ClientManager))
+                    //         .authenticationSuccessHandler(authenticationSuccessHandler)
+                    //         .authenticationFailureHandler(authenticationFailureHandler)
+                    //         .authorizedClientRepository(new ClientUserRepository(userService, commonConfig)))
+                    .logout((logout) ->
+                            logout.logoutUrl(Url.LOGOUT_URL).logoutSuccessHandler(oidcLogoutSuccessHandler()));
+            // .logout()
+            // .logoutUrl(Url.LOGOUT_URL)
+            // .logoutSuccessHandler(new LogoutSuccessHandler(objectMapper, analyticsService))
+            // .and()
+        }
+        return authorizeExchangeSpec.and().build();
+    }
+
+    private boolean isBonitaDev() {
+        System.out.println("### isBonitaDev: " + bonitaProperties.getDeployment() + " ###");
+        return BonitaProperties.DEV.equals(bonitaProperties.getDeployment());
     }
 
     /**
