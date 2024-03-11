@@ -55,6 +55,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static com.appsmith.server.constants.ArtifactJsonType.APPLICATION;
@@ -116,9 +121,38 @@ public class ApplicationControllerCE extends BaseController<ApplicationService, 
     public Mono<ResponseDTO<Boolean>> publish(
             @PathVariable String defaultApplicationId,
             @RequestHeader(name = FieldName.BRANCH_NAME, required = false) String branchName) {
-        return applicationPageService
-                .publish(defaultApplicationId, branchName, true)
-                .thenReturn(new ResponseDTO<>(HttpStatus.OK.value(), true, null));
+
+        log.debug("Export application {}", defaultApplicationId);
+
+        return exportService
+                .getArtifactFile(defaultApplicationId, branchName, APPLICATION)
+                .map(fetchedResource -> {
+                    Object applicationResource = fetchedResource.getArtifactResource();
+                    log.debug("Exported file= {}", applicationResource);
+                    String exportPath = System.getenv("APPSMITH_EXPORT_PATH");
+                    if (exportPath == null) {
+                        String mess = "APPSMITH_EXPORT_PATH is not set";
+                        log.error(mess);
+                        return new ResponseDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), true, mess);
+                    } else if (!Files.exists(Paths.get(exportPath))) {
+                        String mess = exportPath + " does not exist";
+                        log.error(mess);
+                        return new ResponseDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), true, mess);
+                    } else {
+                        String exportFilePath = exportPath + "/appsmith-app.json";
+                        try (BufferedWriter writer = new BufferedWriter(new FileWriter(exportFilePath))) {
+                            writer.write(applicationResource.toString());
+                            log.debug("File written successfully: " + exportFilePath);
+                        } catch (IOException e) {
+//                            e.printStackTrace();
+                            String mess = "Error writing to file: " + exportFilePath;
+                            System.err.println(mess);
+                            return new ResponseDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), true, mess);
+                        }
+                    }
+
+                    return new ResponseDTO<>(HttpStatus.OK.value(), true, null);
+                });
     }
 
     @JsonView(Views.Public.class)
