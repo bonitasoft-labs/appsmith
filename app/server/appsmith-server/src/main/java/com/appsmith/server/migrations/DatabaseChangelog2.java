@@ -1,39 +1,13 @@
 package com.appsmith.server.migrations;
 
 import com.appsmith.external.converters.ISOStringToInstantConverter;
-import com.appsmith.external.models.ActionDTO;
-import com.appsmith.external.models.Datasource;
-import com.appsmith.external.models.PluginType;
-import com.appsmith.external.models.Policy;
-import com.appsmith.external.models.Property;
-import com.appsmith.external.models.QBaseDomain;
-import com.appsmith.external.models.QBranchAwareDomain;
-import com.appsmith.external.models.QDatasource;
+import com.appsmith.external.models.*;
 import com.appsmith.server.acl.AclPermission;
 import com.appsmith.server.acl.PolicyGenerator;
 import com.appsmith.server.configurations.CommonConfig;
 import com.appsmith.server.constants.FieldName;
-import com.appsmith.server.domains.ActionCollection;
-import com.appsmith.server.domains.Application;
-import com.appsmith.server.domains.Config;
-import com.appsmith.server.domains.CustomJSLib;
-import com.appsmith.server.domains.NewAction;
-import com.appsmith.server.domains.NewPage;
-import com.appsmith.server.domains.PermissionGroup;
-import com.appsmith.server.domains.Plugin;
 import com.appsmith.server.domains.PricingPlan;
-import com.appsmith.server.domains.QApplication;
-import com.appsmith.server.domains.QConfig;
-import com.appsmith.server.domains.QPermissionGroup;
-import com.appsmith.server.domains.QPlugin;
-import com.appsmith.server.domains.QTenant;
-import com.appsmith.server.domains.QTheme;
-import com.appsmith.server.domains.QUser;
-import com.appsmith.server.domains.Tenant;
-import com.appsmith.server.domains.Theme;
-import com.appsmith.server.domains.UsagePulse;
-import com.appsmith.server.domains.User;
-import com.appsmith.server.domains.Workspace;
+import com.appsmith.server.domains.*;
 import com.appsmith.server.dtos.Permission;
 import com.appsmith.server.exceptions.AppsmithError;
 import com.appsmith.server.exceptions.AppsmithException;
@@ -64,33 +38,18 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.appsmith.server.acl.AclPermission.ASSIGN_PERMISSION_GROUPS;
-import static com.appsmith.server.acl.AclPermission.MANAGE_INSTANCE_CONFIGURATION;
-import static com.appsmith.server.acl.AclPermission.MANAGE_INSTANCE_ENV;
-import static com.appsmith.server.acl.AclPermission.READ_INSTANCE_CONFIGURATION;
-import static com.appsmith.server.acl.AclPermission.READ_PERMISSION_GROUP_MEMBERS;
-import static com.appsmith.server.acl.AclPermission.READ_THEMES;
+import static com.appsmith.server.acl.AclPermission.*;
 import static com.appsmith.server.acl.AppsmithRole.TENANT_ADMIN;
 import static com.appsmith.server.constants.EnvVariables.APPSMITH_ADMIN_EMAILS;
 import static com.appsmith.server.constants.FieldName.DEFAULT_PERMISSION_GROUP;
 import static com.appsmith.server.constants.FieldName.PERMISSION_GROUP_ID;
 import static com.appsmith.server.helpers.CollectionUtils.findSymmetricDiff;
-import static com.appsmith.server.migrations.DatabaseChangelog1.dropIndexIfExists;
-import static com.appsmith.server.migrations.DatabaseChangelog1.ensureIndexes;
-import static com.appsmith.server.migrations.DatabaseChangelog1.getUpdatedDynamicBindingPathList;
-import static com.appsmith.server.migrations.DatabaseChangelog1.installPluginToAllWorkspaces;
-import static com.appsmith.server.migrations.DatabaseChangelog1.makeIndex;
+import static com.appsmith.server.migrations.DatabaseChangelog1.*;
 import static com.appsmith.server.migrations.MigrationHelperMethods.evictPermissionCacheForUsers;
 import static com.appsmith.server.repositories.BaseAppsmithRepositoryImpl.fieldName;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -1528,5 +1487,23 @@ public class DatabaseChangelog2 {
         oraclePlugin.setName("Oracle");
         oraclePlugin.setIconLocation("https://s3.us-east-2.amazonaws.com/assets.appsmith.com/oracle.svg");
         mongoTemplate.save(oraclePlugin);
+    }
+
+    @ChangeSet(order = "901", id = "add-bonita-plugin", author = "")
+    public void addBonitaPlugin(MongoTemplate mongoTemplate) {
+        Plugin plugin = new Plugin();
+        plugin.setName("Bonita");
+        plugin.setType(PluginType.API);
+        plugin.setPackageName("bonita-plugin");
+        plugin.setUiComponent("ApiEditorForm");
+        plugin.setIconLocation("https://cdn3.bonitasoft.com/sites/default/files/Bonitasoft_Logo_Bulle.svg");
+        plugin.setDocumentationLink("https://api-documentation.bonitasoft.com/latest/");
+        plugin.setDefaultInstall(true);
+        try {
+            mongoTemplate.insert(plugin);
+        } catch (DuplicateKeyException e) {
+            log.warn(plugin.getPackageName() + " already present in database.");
+        }
+        installPluginToAllWorkspaces(mongoTemplate, plugin.getId());
     }
 }
