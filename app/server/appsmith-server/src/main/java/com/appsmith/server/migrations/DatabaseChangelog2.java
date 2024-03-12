@@ -6,8 +6,8 @@ import com.appsmith.server.acl.AclPermission;
 import com.appsmith.server.acl.PolicyGenerator;
 import com.appsmith.server.configurations.CommonConfig;
 import com.appsmith.server.constants.FieldName;
-import com.appsmith.server.domains.PricingPlan;
 import com.appsmith.server.domains.*;
+import com.appsmith.server.domains.PricingPlan;
 import com.appsmith.server.dtos.Permission;
 import com.appsmith.server.exceptions.AppsmithError;
 import com.appsmith.server.exceptions.AppsmithException;
@@ -1496,6 +1496,8 @@ public class DatabaseChangelog2 {
         plugin.setType(PluginType.API);
         plugin.setPackageName("bonita-plugin");
         plugin.setUiComponent("ApiEditorForm");
+        plugin.setDatasourceComponent("RestAPIDatasourceForm");
+        plugin.setResponseType(Plugin.ResponseType.JSON);
         plugin.setIconLocation("https://cdn3.bonitasoft.com/sites/default/files/Bonitasoft_Logo_Bulle.svg");
         plugin.setDocumentationLink("https://api-documentation.bonitasoft.com/latest/");
         plugin.setDefaultInstall(true);
