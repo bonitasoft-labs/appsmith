@@ -1488,24 +1488,4 @@ public class DatabaseChangelog2 {
         oraclePlugin.setIconLocation("https://s3.us-east-2.amazonaws.com/assets.appsmith.com/oracle.svg");
         mongoTemplate.save(oraclePlugin);
     }
-
-    @ChangeSet(order = "901", id = "add-bonita-plugin", author = "")
-    public void addBonitaPlugin(MongoTemplate mongoTemplate) {
-        Plugin plugin = new Plugin();
-        plugin.setName("Bonita");
-        plugin.setType(PluginType.API);
-        plugin.setPackageName("bonita-plugin");
-        plugin.setUiComponent("ApiEditorForm");
-        plugin.setDatasourceComponent("RestAPIDatasourceForm");
-        plugin.setResponseType(Plugin.ResponseType.JSON);
-        plugin.setIconLocation("https://cdn3.bonitasoft.com/sites/default/files/Bonitasoft_Logo_Bulle.svg");
-        plugin.setDocumentationLink("https://api-documentation.bonitasoft.com/latest/");
-        plugin.setDefaultInstall(true);
-        try {
-            mongoTemplate.insert(plugin);
-        } catch (DuplicateKeyException e) {
-            log.warn(plugin.getPackageName() + " already present in database.");
-        }
-        installPluginToAllWorkspaces(mongoTemplate, plugin.getId());
-    }
 }
