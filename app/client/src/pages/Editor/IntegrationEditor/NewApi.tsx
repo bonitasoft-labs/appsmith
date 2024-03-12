@@ -152,7 +152,6 @@ export const API_ACTION = {
   CREATE_NEW_GRAPHQL_API: "CREATE_NEW_GRAPHQL_API",
   CREATE_DATASOURCE_FORM: "CREATE_DATASOURCE_FORM",
   AUTH_API: "AUTH_API",
-  BONITA_AUTH_API: "BONITA_AUTH_API",
 };
 
 function NewApiScreen(props: Props) {
@@ -200,21 +199,6 @@ function NewApiScreen(props: Props) {
     const plugin = plugins.find((p) => p.name === "Bonita");
     setBonitaAuthAPiPlugin(plugin);
   }, [plugins]);
-
-  const handleCreateBonitaAuthApiDatasource = useCallback(() => {
-    if (bonitaAuthApiPlugin) {
-      AnalyticsUtil.logEvent("CREATE_DATA_SOURCE_AUTH_API_CLICK", {
-        pluginId: bonitaAuthApiPlugin.id,
-      });
-      AnalyticsUtil.logEvent("CREATE_DATA_SOURCE_CLICK", {
-        pluginName: bonitaAuthApiPlugin.name,
-        pluginPackageName: bonitaAuthApiPlugin.packageName,
-      });
-      props.createTempDatasourceFromForm({
-        pluginId: bonitaAuthApiPlugin.id,
-      });
-    }
-  }, [bonitaAuthApiPlugin, props.createTempDatasourceFromForm]);
 
   const handleCreateNew = (source: string) => {
     AnalyticsUtil.logEvent("CREATE_DATA_SOURCE_CLICK", {
@@ -286,10 +270,6 @@ function NewApiScreen(props: Props) {
         handleCreateAuthApiDatasource();
         break;
       }
-      case API_ACTION.BONITA_AUTH_API: {
-        handleCreateBonitaAuthApiDatasource();
-        break;
-      }
       default:
     }
   };
@@ -351,15 +331,19 @@ function NewApiScreen(props: Props) {
             {bonitaAuthApiPlugin && (
               <ApiCard
                 className="t--createAuthApiDatasource"
-                onClick={() => handleOnClick(API_ACTION.BONITA_AUTH_API)}
+                onClick={() =>
+                  handleOnClick(API_ACTION.CREATE_DATASOURCE_FORM, {
+                    pluginId: bonitaAuthApiPlugin.id,
+                  })
+                }
               >
                 <CardContentWrapper>
                   <img
-                    alt="OAuth2"
+                    alt="Bonita"
                     className="authApiImage t--authApiImage content-icon"
                     src="https://cdn3.bonitasoft.com/sites/default/files/Bonitasoft_Logo_Bulle.svg"
                   />
-                  <p className="t--plugin-name textBtn">Bonita</p>
+                  <p className="t--plugin-name textBtn">Bonita Runtime</p>
                 </CardContentWrapper>
               </ApiCard>
             )}
