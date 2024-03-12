@@ -41,8 +41,6 @@ public class CustomReactiveUserServiceBonitaImpl implements ReactiveUserDetailsS
                     newUser.setState(UserState.ACTIVATED);
                     newUser.setIsEnabled(true);
                     newUser.setSource(LoginSource.BONITA_DEV);
-                    // @Bonita: We don't need to verify email for Bonita users
-                    newUser.setEmailVerificationRequired(false);
                     log.debug("### createUser with email: {}", username);
                     return userService.create(newUser);
                 }))
