@@ -162,11 +162,13 @@ export class UserApi extends Api {
     return Api.put(UserApi.confirmUserInviteURL, request);
   }
 
-  static async logoutUser(): Promise<AxiosPromise<ApiResponse>> {
-    return Api.post(UserApi.logoutURL, null, null, {
+  static logoutUser() {
+    // @Bonita: Navigate to the logout endpoint
+    /* return Api.post(UserApi.logoutURL, null, null, {
       baseURL: "/",
       }
-    );
+    );*/
+    window.location.replace("/logout");
   }
 
   static async uploadPhoto(request: { file: File }): Promise<

@@ -259,8 +259,9 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
         String originHeader =
                 webFilterExchange.getExchange().getRequest().getHeaders().getOrigin();
 
-        //@Bonita: handle Bonita dev auth success
-        if (authentication instanceof OAuth2AuthenticationToken || authentication instanceof BonitaDevAuthentificationToken) {
+        // @Bonita: handle Bonita dev auth success
+        if (authentication instanceof OAuth2AuthenticationToken
+                || authentication instanceof BonitaDevAuthentificationToken) {
             // for oauth type signups, we don't need to verify email
             user.setEmailVerificationRequired(FALSE);
 
@@ -274,18 +275,18 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
             // if they are not the same.
             // Also, since this is OAuth2 authentication, we remove the password from user resource object, in order to
             // invalidate any password which may have been set during a form login.
-            //@Bonita: add tiken instance condition
+            // @Bonita: add token instance condition
             if (authentication instanceof OAuth2AuthenticationToken) {
                 LoginSource authenticationLoginSource = LoginSource.fromString(
-                    ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId());
+                        ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId());
                 if (!authenticationLoginSource.equals(user.getSource())) {
                     user.setPassword(null);
                     user.setSource(authenticationLoginSource);
                     // Update the user in separate thread
                     userRepository
-                        .save(user)
-                        .subscribeOn(Schedulers.boundedElastic())
-                        .subscribe();
+                            .save(user)
+                            .subscribeOn(Schedulers.boundedElastic())
+                            .subscribe();
                 }
             }
             if (isFromSignup) {
@@ -329,7 +330,6 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
                     monos.add(userDataService.ensureViewedCurrentVersionReleaseNotes(currentUser));
 
                     String modeOfLogin = FieldName.FORM_LOGIN;
-                    log.debug("### modeOfLogin {}", modeOfLogin);
                     if (authentication instanceof OAuth2AuthenticationToken) {
                         modeOfLogin = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
                     }

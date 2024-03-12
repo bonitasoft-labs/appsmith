@@ -19,7 +19,7 @@ public class BonitaDevAuthentificationToken extends AbstractAuthenticationToken 
     public BonitaDevAuthentificationToken(Object principal, Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
         this.principal = principal;
-        setAuthenticated(false);
+        super.setAuthenticated(true);
     }
 
     public static BonitaDevAuthentificationToken authenticated(Object principal) {
