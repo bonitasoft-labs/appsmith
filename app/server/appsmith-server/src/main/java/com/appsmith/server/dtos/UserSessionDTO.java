@@ -1,6 +1,6 @@
 package com.appsmith.server.dtos;
 
-import com.appsmith.server.configurations.bonita.BonitaDevAuthentificationToken;
+import com.appsmith.server.configurations.bonita.BonitaDevAuthenticationToken;
 import com.appsmith.server.domains.LoginSource;
 import com.appsmith.server.domains.User;
 import com.appsmith.server.domains.UserState;
@@ -107,7 +107,7 @@ public class UserSessionDTO {
             session.idTokenValue = user.getIdTokenValue();
         } else if (authentication instanceof UsernamePasswordAuthenticationToken) {
             session.authorizedClientRegistrationId = PASSWORD_PROVIDER;
-        } else if (authentication instanceof BonitaDevAuthentificationToken) {
+        } else if (authentication instanceof BonitaDevAuthenticationToken) {
             log.debug("### BONITA_DEV_PROVIDER {}", authentication.getClass().getName());
             session.authorizedClientRegistrationId = BONITA_DEV_PROVIDER;
         } else {
@@ -152,7 +152,7 @@ public class UserSessionDTO {
             return new OAuth2AuthenticationToken(user, authorities, authorizedClientRegistrationId);
         } else if (BONITA_DEV_PROVIDER.equals(authorizedClientRegistrationId)) {
             log.debug("### BONITA_DEV_PROVIDER {}", authorizedClientRegistrationId);
-            return new BonitaDevAuthentificationToken(user, authorities);
+            return new BonitaDevAuthenticationToken(user, authorities);
         }
 
         throw new IllegalArgumentException("Invalid registration ID " + authorizedClientRegistrationId);

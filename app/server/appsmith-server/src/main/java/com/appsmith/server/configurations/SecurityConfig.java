@@ -194,6 +194,9 @@ public class SecurityConfig {
                 .matchers(
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, Url.LOGIN_URL),
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, Url.HEALTH_CHECK),
+                        // @Bonita: Adding this url on filter to allow access with anonymous user
+                        ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, "/login"),
+                        ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, "/oauth2"),
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, USER_URL),
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, USER_URL + "/super"),
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, USER_URL + "/forgotPassword"),

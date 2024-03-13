@@ -1,6 +1,6 @@
 package com.appsmith.server.authentication.handlers;
 
-import com.appsmith.server.configurations.bonita.BonitaDevAuthentificationToken;
+import com.appsmith.server.configurations.bonita.BonitaDevAuthenticationToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -17,6 +17,6 @@ public class ServerAuthenticationConverterBonitaDev implements ServerAuthenticat
     @Override
     public Mono<Authentication> convert(ServerWebExchange exchange) {
         log.debug("### ServerAuthenticationConverterBonitaDev - convert {}", email);
-        return Mono.just(new BonitaDevAuthentificationToken(email));
+        return Mono.just(new BonitaDevAuthenticationToken(email));
     }
 }

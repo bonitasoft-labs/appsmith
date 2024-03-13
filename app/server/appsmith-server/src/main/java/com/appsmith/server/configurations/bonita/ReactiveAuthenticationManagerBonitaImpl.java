@@ -1,6 +1,6 @@
 package com.appsmith.server.configurations.bonita;
 
-import com.appsmith.server.authentication.handlers.CustomReactiveUserServiceBonitaImpl;
+import com.appsmith.server.authentication.handlers.bonita.CustomReactiveUserServiceBonitaImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -23,13 +23,13 @@ public class ReactiveAuthenticationManagerBonitaImpl implements ReactiveAuthenti
     public Mono<Authentication> authenticate(Authentication authentication) {
         log.debug("ReactiveAuthenticationManagerBonitaImpl: authenticate");
         // BonitaDevAuthenticationToken is a custom token.
-        if (authentication instanceof BonitaDevAuthentificationToken) {
+        if (authentication instanceof BonitaDevAuthenticationToken) {
             String email = (String) authentication.getPrincipal();
             log.debug("User: {}", email);
             // @Bonita: Create user if doesn't exist
             return customReactiveUserServiceBonita
                     .findByUsername(email)
-                    .flatMap(user -> Mono.just(BonitaDevAuthentificationToken.authenticated(user)));
+                    .flatMap(user -> Mono.just(BonitaDevAuthenticationToken.authenticated(user)));
         }
         return Mono.just(authentication);
     }

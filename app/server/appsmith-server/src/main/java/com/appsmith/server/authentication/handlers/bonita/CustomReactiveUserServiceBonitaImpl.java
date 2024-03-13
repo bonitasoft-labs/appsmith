@@ -1,5 +1,6 @@
-package com.appsmith.server.authentication.handlers;
+package com.appsmith.server.authentication.handlers.bonita;
 
+import com.appsmith.server.configurations.CommonConfig;
 import com.appsmith.server.domains.LoginSource;
 import com.appsmith.server.domains.User;
 import com.appsmith.server.domains.UserState;
@@ -28,13 +29,12 @@ public class CustomReactiveUserServiceBonitaImpl implements ReactiveUserDetailsS
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {
-        log.debug("### findByUsername: {}", username);
         Mono<User> userSearch = repository.findByEmail(username);
-        userSearch.doOnNext(u -> log.debug("### findByEmail has Element {}", u));
         return userSearch
                 .switchIfEmpty(repository.findFirstByEmailIgnoreCaseOrderByCreatedAtDesc(username))
                 .switchIfEmpty(Mono.defer(() -> {
                     User newUser = new User();
+
                     // @Bonita: Create a user if it doesn't exist
                     newUser.setName(username);
                     newUser.setEmail(username);
@@ -42,10 +42,13 @@ public class CustomReactiveUserServiceBonitaImpl implements ReactiveUserDetailsS
                     newUser.setIsEnabled(true);
                     newUser.setSource(LoginSource.BONITA_DEV);
                     log.debug("### createUser with email: {}", username);
+                    // @Bonita: Create an admin user if it doesn't exist
+                    // With this function, the user is not added to admin mail in CommonConfig
+                    //return userService.userCreate(newUser, true);
                     return userService.create(newUser);
                 }))
                 .flatMap(user -> {
-                    if (!user.getIsEnabled()) {
+                    if (Boolean.FALSE.equals(user.getIsEnabled())) {
                         user.setIsEnabled(true);
                         log.debug("### user setIsEnabled: {}", username);
                         return repository.save(user);
