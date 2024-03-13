@@ -33,6 +33,7 @@ import {
   DATASOURCE_REST_API_FORM,
 } from "@appsmith/constants/forms";
 import DataSourceEditorForm from "./DBForm";
+import BonitaDataSourceEditorForm from "./BonitaForm";
 import RestAPIDatasourceForm from "./RestAPIDatasourceForm";
 import type { Datasource, DatasourceStorage } from "entities/Datasource";
 import { ToastMessageType } from "entities/Datasource";
@@ -767,6 +768,14 @@ class DatasourceEditorRouter extends React.Component<Props, State> {
     );
   };
 
+  shouldRenderBonitaForm = () => {
+    const { isInsideReconnectModal, pluginName, viewMode } = this.props;
+
+    const shouldViewMode = viewMode && !isInsideReconnectModal;
+    // Check for specific form types first
+    return pluginName === "Bonita" && !shouldViewMode;
+  };
+
   renderForm() {
     const {
       datasource,
@@ -804,6 +813,31 @@ class DatasourceEditorRouter extends React.Component<Props, State> {
             pageId={pageId}
             pluginName={pluginName}
             pluginPackageName={pluginPackageName}
+          />
+          {this.renderSaveDisacardModal()}
+        </>
+      );
+    }
+
+    if (this.shouldRenderBonitaForm()) {
+      return (
+        <>
+          <BonitaDataSourceEditorForm
+            applicationId={this.props.applicationId}
+            currentEnvironment={this.getEnvironmentId()}
+            datasourceId={datasourceId}
+            formConfig={formConfig}
+            formData={formData}
+            formName={DATASOURCE_REST_API_FORM}
+            hiddenHeader={isInsideReconnectModal}
+            isPluginAllowedToPreviewData={
+              this.props.isPluginAllowedToPreviewData
+            }
+            isSaving={isSaving}
+            pageId={pageId}
+            pluginType={pluginType}
+            setupConfig={this.setupConfig}
+            viewMode={viewMode && !isInsideReconnectModal}
           />
           {this.renderSaveDisacardModal()}
         </>
@@ -1067,11 +1101,10 @@ const mapStateToProps = (state: AppState, props: any): ReduxStateProps => {
   const pluginId = get(datasource, "pluginId", "");
   const plugin = getPlugin(state, pluginId);
   const { applicationSlug, pageSlug } = selectURLSlugs(state);
-  // @Bonita - Force bonita plugin to use the DB form
+  // eslint-disable-next-line no-console
+  console.log("state", state);
   const formName =
-    plugin?.type === "API" && plugin?.name !== "Bonita"
-      ? DATASOURCE_REST_API_FORM
-      : DATASOURCE_DB_FORM;
+    plugin?.type === "API" ? DATASOURCE_REST_API_FORM : DATASOURCE_DB_FORM;
   const formData = getFormValues(formName)(state) as
     | Datasource
     | ApiDatasourceForm;

@@ -930,9 +930,7 @@ export function* setActionPropertySaga(
   // we use the formData to crosscheck, just in case value is not updated yet.
   const formData: Action = yield select(
     getFormValues(
-      // @Bonita - Force bonita plugin to use the DB form
-      actionObj?.pluginType === PluginType.API &&
-        actionObj?.datasource?.name !== "Bonita"
+      actionObj?.pluginType === PluginType.API
         ? API_EDITOR_FORM_NAME
         : QUERY_EDITOR_FORM_NAME,
     ),
