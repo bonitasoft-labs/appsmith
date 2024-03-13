@@ -8,9 +8,9 @@
           "label": "URL",
           "configProperty": "datasourceConfiguration.url",
           "controlType": "INPUT_TEXT",
-          "isRequired": true,
           "placeholderText": "http://loacalhost:8080/bonita",
-          "initialValue": "http://loacalhost:8080/bonita"
+          "initialValue": "http://loacalhost:8080/bonita",
+          "isRequired": true
         },
         {
           "label": "Username",
@@ -25,10 +25,9 @@
           "dataType": "PASSWORD",
           "controlType": "INPUT_TEXT",
           "initialValue": "",
-          "encrypted": true,
-          "isRequired": true
+          "isRequired": true,
+          "encrypted": true
         }
-
       ]
     }
   ]

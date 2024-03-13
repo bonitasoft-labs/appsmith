@@ -31,8 +31,6 @@ public class Migration047AddBonitaPlugin {
         plugin.setType(PluginType.API);
         plugin.setPackageName("bonita-plugin");
         plugin.setUiComponent("ApiEditorForm");
-        plugin.setDatasourceComponent("AutoForm");
-        plugin.setResponseType(Plugin.ResponseType.JSON);
         plugin.setIconLocation("https://cdn3.bonitasoft.com/sites/default/files/Bonitasoft_Logo_Bulle.svg");
         plugin.setDocumentationLink("https://api-documentation.bonitasoft.com/latest/");
         plugin.setDefaultInstall(true);

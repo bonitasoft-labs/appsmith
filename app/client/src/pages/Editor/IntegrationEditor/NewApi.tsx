@@ -330,7 +330,8 @@ function NewApiScreen(props: Props) {
             )}
             {bonitaAuthApiPlugin && (
               <ApiCard
-                className="t--createAuthApiDatasource"
+                className="t--createBonitaAuthApiDatasource"
+                id={bonitaAuthApiPlugin.id}
                 onClick={() =>
                   handleOnClick(API_ACTION.CREATE_DATASOURCE_FORM, {
                     pluginId: bonitaAuthApiPlugin.id,
