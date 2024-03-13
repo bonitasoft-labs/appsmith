@@ -9,24 +9,26 @@
           "configProperty": "datasourceConfiguration.url",
           "controlType": "INPUT_TEXT",
           "isRequired": true,
-          "initialValue": "http://localhost:57768/bonita"
+          "placeholderText": "http://loacalhost:8080/bonita",
+          "initialValue": "http://loacalhost:8080/bonita"
         },
         {
           "label": "Username",
           "configProperty": "datasourceConfiguration.authentication.username",
           "controlType": "INPUT_TEXT",
-          "isRequired": true,
-          "initialValue": "dev@dev.com"
+          "initialValue": "install",
+          "isRequired": true
         },
         {
           "label": "Password",
           "configProperty": "datasourceConfiguration.authentication.password",
-          "controlType": "INPUT_TEXT",
           "dataType": "PASSWORD",
-          "initialValue": "123123",
-          "isRequired": true,
-          "encrypted": true
+          "controlType": "INPUT_TEXT",
+          "initialValue": "",
+          "encrypted": true,
+          "isRequired": true
         }
+
       ]
     }
   ]

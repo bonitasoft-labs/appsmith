@@ -1067,8 +1067,11 @@ const mapStateToProps = (state: AppState, props: any): ReduxStateProps => {
   const pluginId = get(datasource, "pluginId", "");
   const plugin = getPlugin(state, pluginId);
   const { applicationSlug, pageSlug } = selectURLSlugs(state);
+  // @Bonita - Force bonita plugin to use the DB form
   const formName =
-    plugin?.type === "API" ? DATASOURCE_REST_API_FORM : DATASOURCE_DB_FORM;
+    plugin?.type === "API" && plugin?.packageName !== "bonita-plugin"
+      ? DATASOURCE_REST_API_FORM
+      : DATASOURCE_DB_FORM;
   const formData = getFormValues(formName)(state) as
     | Datasource
     | ApiDatasourceForm;

@@ -32,6 +32,8 @@ export enum PluginPackageName {
   SNOWFLAKE = "snowflake-plugin",
   APPSMITH_AI = "appsmithai-plugin",
   WORKFLOW = "workflow-plugin",
+  // @Bonita - add bonita package name
+  BONITA = "bonita-plugin",
 }
 
 // more can be added subsequently.
@@ -56,6 +58,8 @@ export enum PluginName {
   GRAPHQL = "Authenticated GraphQL API",
   OPEN_AI = "Open AI",
   APPSMITH_AI = "Appsmith AI",
+  // @Bonita - add bonita plugin name
+  BONITA = "Bonita",
 }
 
 export enum PaginationType {
