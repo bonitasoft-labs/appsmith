@@ -1101,8 +1101,6 @@ const mapStateToProps = (state: AppState, props: any): ReduxStateProps => {
   const pluginId = get(datasource, "pluginId", "");
   const plugin = getPlugin(state, pluginId);
   const { applicationSlug, pageSlug } = selectURLSlugs(state);
-  // eslint-disable-next-line no-console
-  console.log("state", state);
   const formName =
     plugin?.type === "API" ? DATASOURCE_REST_API_FORM : DATASOURCE_DB_FORM;
   const formData = getFormValues(formName)(state) as
