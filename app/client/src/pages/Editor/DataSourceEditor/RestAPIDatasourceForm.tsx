@@ -280,9 +280,37 @@ class DatasourceRestAPIEditor extends React.Component<Props> {
               {msg}
             </Callout>
           ))}
-        {this.renderGeneralSettings()}
-        {this.renderOauth2AdvancedSettings()}
+        {this.props?.pluginName === "Bonita"
+          ? this.renderBonitaGeneralSettings()
+          : this.renderGeneralSettings()}
+        {this.props?.pluginName === "Bonita"
+          ? null
+          : this.renderOauth2AdvancedSettings()}
       </>
+    );
+  };
+
+  renderBonitaGeneralSettings = () => {
+    this.props.formData.authType = AuthType.basic;
+    return (
+      <section
+        className="t--section-general"
+        data-location-id="section-General"
+        data-testid="section-General"
+      >
+        <FormInputContainer data-location-id={btoa("url")}>
+          {this.renderInputTextControlViaFormControl({
+            configProperty: "url",
+            label: "URL",
+            placeholderText: "https://example.com",
+            dataType: "TEXT",
+            encrypted: false,
+            isRequired: true,
+            fieldValidator: this.urlValidator,
+          })}
+        </FormInputContainer>
+        {this.renderBasic()}
+      </section>
     );
   };
 
