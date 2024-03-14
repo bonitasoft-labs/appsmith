@@ -8,8 +8,8 @@
           "label": "URL",
           "configProperty": "datasourceConfiguration.url",
           "controlType": "INPUT_TEXT",
-          "placeholderText": "http://loacalhost:8080/bonita",
-          "initialValue": "http://loacalhost:8080/bonita",
+          "placeholderText": "http://localhost:8080/bonita",
+          "initialValue": "http://localhost:8080/bonita",
           "isRequired": true
         },
         {
