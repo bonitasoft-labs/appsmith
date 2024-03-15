@@ -344,7 +344,7 @@ function NewApiScreen(props: Props) {
                     className="authApiImage t--authApiImage content-icon"
                     src="https://cdn3.bonitasoft.com/sites/default/files/Bonitasoft_Logo_Bulle.svg"
                   />
-                  <p className="t--plugin-name textBtn">Bonita Runtime</p>
+                  <p className="t--plugin-name textBtn">Bonita</p>
                 </CardContentWrapper>
               </ApiCard>
             )}
