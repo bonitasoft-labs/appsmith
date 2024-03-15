@@ -11,6 +11,7 @@ public enum LoginSource {
     FORM,
     GITHUB,
     KEYCLOAK,
+    BONITA_DEV,
     OIDC;
 
     public static final Set<LoginSource> oauthSources = Set.of(GOOGLE, GITHUB, KEYCLOAK, OIDC);
@@ -21,7 +22,7 @@ public enum LoginSource {
 
     public static Set<String> getNonFormSources() {
         return Arrays.stream(values())
-                .filter(source -> source != LoginSource.FORM)
+                .filter(source -> source != LoginSource.FORM && source != LoginSource.BONITA_DEV)
                 .map(source -> source.name().toLowerCase())
                 .collect(Collectors.toSet());
     }

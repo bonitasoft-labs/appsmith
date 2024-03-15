@@ -7,7 +7,7 @@ public class UrlCE {
     static final String VERSION = "/v1";
     public static final String HEALTH_CHECK = BASE_URL + VERSION + "/health";
     public static final String LOGIN_URL = BASE_URL + VERSION + "/login";
-    public static final String LOGOUT_URL = BASE_URL + VERSION + "/logout";
+    public static final String LOGOUT_URL = "/logout";
     public static final String WORKSPACE_URL = BASE_URL + VERSION + "/workspaces";
     public static final String LAYOUT_URL = BASE_URL + VERSION + "/layouts";
     public static final String PLUGIN_URL = BASE_URL + VERSION + "/plugins";

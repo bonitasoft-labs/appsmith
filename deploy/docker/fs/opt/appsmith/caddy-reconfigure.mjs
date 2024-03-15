@@ -99,7 +99,8 @@ parts.push(`
     import file_server
   }
 
-  @backend path /api/* /oauth2/* /login/*
+# adding /users/* in order for the backend auth to be triggered when the user is redirected to the UserAuth routes
+  @backend path /api/* /oauth2/* /login/* /user/* /logout
   handle @backend {
     import reverse_proxy 8080
   }

@@ -2,6 +2,7 @@ package com.appsmith.server.authentication.handlers.ce;
 
 import com.appsmith.external.constants.AnalyticsEvents;
 import com.appsmith.server.authentication.handlers.CustomServerOAuth2AuthorizationRequestResolver;
+import com.appsmith.server.configurations.bonita.BonitaDevAuthenticationToken;
 import com.appsmith.server.constants.FieldName;
 import com.appsmith.server.constants.RateLimitConstants;
 import com.appsmith.server.constants.Security;
@@ -168,6 +169,7 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
          * Send email verification mail with the redirect url
          * Redirects the user to verificationPending screen
          */
+        log.debug("### postVerificationRequiredHandler {}", user.getEmail());
         return webFilterExchange.getExchange().getSession().flatMap(webSession -> {
             webSession.getAttributes().remove(DEFAULT_SPRING_SECURITY_CONTEXT_ATTR_NAME);
             return redirectHelper
@@ -257,7 +259,9 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
         String originHeader =
                 webFilterExchange.getExchange().getRequest().getHeaders().getOrigin();
 
-        if (authentication instanceof OAuth2AuthenticationToken) {
+        // @Bonita: handle Bonita dev auth success
+        if (authentication instanceof OAuth2AuthenticationToken
+                || authentication instanceof BonitaDevAuthenticationToken) {
             // for oauth type signups, we don't need to verify email
             user.setEmailVerificationRequired(FALSE);
 
@@ -271,16 +275,19 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
             // if they are not the same.
             // Also, since this is OAuth2 authentication, we remove the password from user resource object, in order to
             // invalidate any password which may have been set during a form login.
-            LoginSource authenticationLoginSource = LoginSource.fromString(
-                    ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId());
-            if (!authenticationLoginSource.equals(user.getSource())) {
-                user.setPassword(null);
-                user.setSource(authenticationLoginSource);
-                // Update the user in separate thread
-                userRepository
-                        .save(user)
-                        .subscribeOn(Schedulers.boundedElastic())
-                        .subscribe();
+            // @Bonita: add token instance condition
+            if (authentication instanceof OAuth2AuthenticationToken) {
+                LoginSource authenticationLoginSource = LoginSource.fromString(
+                        ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId());
+                if (!authenticationLoginSource.equals(user.getSource())) {
+                    user.setPassword(null);
+                    user.setSource(authenticationLoginSource);
+                    // Update the user in separate thread
+                    userRepository
+                            .save(user)
+                            .subscribeOn(Schedulers.boundedElastic())
+                            .subscribe();
+                }
             }
             if (isFromSignup) {
                 boolean finalIsFromSignup = isFromSignup;
@@ -290,12 +297,12 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
                             if (isCreateWorkspaceAllowed.equals(Boolean.TRUE)) {
                                 return createDefaultApplication(defaultWorkspaceId, authentication)
                                         .flatMap(application -> handleOAuth2Redirect(
-                                                webFilterExchange, application, finalIsFromSignup));
+                                                webFilterExchange, application, finalIsFromSignup, authentication));
                             }
-                            return handleOAuth2Redirect(webFilterExchange, null, finalIsFromSignup);
+                            return handleOAuth2Redirect(webFilterExchange, null, finalIsFromSignup, authentication);
                         });
             } else {
-                redirectionMono = handleOAuth2Redirect(webFilterExchange, null, isFromSignup);
+                redirectionMono = handleOAuth2Redirect(webFilterExchange, null, isFromSignup, authentication);
             }
         } else {
             // form type signup/login handler
@@ -362,7 +369,7 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
     }
 
     protected Mono<Application> createDefaultApplication(String defaultWorkspaceId, Authentication authentication) {
-
+        // @Bonita: Check for production mode to import right apps
         // need to create default application
         Application application = new Application();
         application.setWorkspaceId(defaultWorkspaceId);
@@ -395,7 +402,6 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
                                 });
                     });
         }
-
         return applicationMono.flatMap(application1 -> applicationPageService.createApplication(application1));
     }
 
@@ -414,7 +420,10 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
             // Disabling this because although the reference in the Javadoc is to a private method, it is still useful.
             "JavadocReference")
     private Mono<Void> handleOAuth2Redirect(
-            WebFilterExchange webFilterExchange, Application defaultApplication, boolean isFromSignup) {
+            WebFilterExchange webFilterExchange,
+            Application defaultApplication,
+            boolean isFromSignup,
+            Authentication authentication) {
         ServerWebExchange exchange = webFilterExchange.getExchange();
         String state = exchange.getRequest().getQueryParams().getFirst(Security.QUERY_PARAMETER_STATE);
         String redirectUrl = RedirectHelper.DEFAULT_REDIRECT_URL;
@@ -431,7 +440,9 @@ public class AuthenticationSuccessHandlerCE implements ServerAuthenticationSucce
         boolean addFirstTimeExperienceParam = false;
         if (isFromSignup) {
             if (redirectHelper.isDefaultRedirectUrl(redirectUrl) && defaultApplication != null) {
-                addFirstTimeExperienceParam = true;
+                // @Bonita - Put to false to not redirect to first time experience param
+                addFirstTimeExperienceParam = !(authentication instanceof BonitaDevAuthenticationToken
+                        || authentication instanceof OAuth2AuthenticationToken);
                 HttpHeaders headers = exchange.getRequest().getHeaders();
                 redirectUrl = redirectHelper.buildApplicationUrl(defaultApplication, headers);
             }

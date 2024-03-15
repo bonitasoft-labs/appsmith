@@ -1,7 +1,11 @@
 package com.appsmith.server.configurations;
 
+import com.appsmith.server.authentication.handlers.*;
+import com.appsmith.server.authentication.handlers.ce.OidcClientInitiatedServerLogoutSuccessHandlerBO;
 import com.appsmith.server.authentication.handlers.AccessDeniedHandler;
 import com.appsmith.server.authentication.oauth2clientrepositories.CustomOauth2ClientRepositoryManager;
+import com.appsmith.server.configurations.bonita.BonitaProperties;
+import com.appsmith.server.configurations.bonita.ReactiveAuthenticationManagerBonitaImpl;
 import com.appsmith.server.constants.FieldName;
 import com.appsmith.server.constants.Url;
 import com.appsmith.server.domains.User;
@@ -28,8 +32,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
+import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -88,8 +95,17 @@ public class SecurityConfig {
     @Autowired
     private CustomOauth2ClientRepositoryManager oauth2ClientManager;
 
+    @Autowired
+    private ReactiveAuthenticationManagerBonitaImpl reactiveAuthenticationManagerBonitaImpl;
+
+    @Autowired
+    private BonitaProperties bonitaProperties;
+
     @Value("${appsmith.internal.password}")
     private String INTERNAL_PASSWORD;
+
+    /*@Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
+    private String OIDC_ISSUER_URI*/
 
     private static final String INTERNAL = "INTERNAL";
 
@@ -141,10 +157,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        // ServerAuthenticationEntryPointFailureHandler failureHandler =
-        //        new ServerAuthenticationEntryPointFailureHandler(authenticationEntryPoint);
-        System.out.println("#################### BONITA 2#############################");
+    @Order(1)
+    public SecurityWebFilterChain securityApiFilterChain(ServerHttpSecurity http) {
+        System.out.println("#################### BONITA - API #############################");
         return http
                 // The native CSRF solution doesn't work with WebFlux, yet, but only for WebMVC. So we make our own.
                 .csrf()
@@ -160,20 +175,29 @@ public class SecurityConfig {
                 .frameOptions()
                 .disable()
                 .and()
+                // @Bonita: necessary only if we need to remove the anonymous user
+                // .securityContextRepository(new WebSessionServerSecurityContextRepository())
+                // @Bonita: Anonymous auth is used in all public pages and front-end redirects to Appsmith login page
+                // when accessing a protected page with an anonymous user
                 .anonymous()
                 .principal(createAnonymousUser())
                 .and()
+                .exceptionHandling()
+                // @Bonita: comments to let keycloak handle the authentication
+                .authenticationEntryPoint(authenticationEntryPoint)
                 // This returns 401 unauthorized for all requests that are not authenticated but authentication is
                 // required
                 // The client will redirect to the login page if we return 401 as Http status response
-                .exceptionHandling()
-                .authenticationEntryPoint(authenticationEntryPoint)
                 .accessDeniedHandler(accessDeniedHandler)
                 .and()
+                .securityMatcher(new PathPatternParserServerWebExchangeMatcher("/api/**"))
                 .authorizeExchange()
                 .matchers(
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, Url.LOGIN_URL),
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, Url.HEALTH_CHECK),
+                        // @Bonita: Adding this url on filter to allow access with anonymous user
+                        ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, "/login"),
+                        ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, "/oauth2"),
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, USER_URL),
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, USER_URL + "/super"),
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, USER_URL + "/forgotPassword"),
@@ -199,13 +223,65 @@ public class SecurityConfig {
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, PRODUCT_ALERT + "/alert"),
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, CONSOLIDATED_API_URL + "/view"))
                 .permitAll()
-                .pathMatchers("/public/**", "/oauth2/**")
-                .permitAll()
                 .anyExchange()
                 .authenticated()
                 .and()
-                // Add Pre Auth rate limit filter before authentication filter
-                // .addFilterBefore(
+                .build();
+    }
+
+    @Bean
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        // ServerAuthenticationEntryPointFailureHandler failureHandler =
+        //        new ServerAuthenticationEntryPointFailureHandler(authenticationEntryPoint);
+        System.out.println("#################### BONITA 4 #############################");
+        ServerHttpSecurity.AuthorizeExchangeSpec authorizeExchangeSpec = http
+                // Default security headers configuration from
+                // https://docs.spring.io/spring-security/site/docs/5.0.x/reference/html/headers.html
+                .headers()
+                // Disabled here because add it in NGINX instead.
+                .contentTypeOptions()
+                .disable()
+                // Disabled because we use CSP's `frame-ancestors` instead.
+                .frameOptions()
+                .disable()
+                .and()
+                // @Bonita: necessary only if we need to remove the anonymous user
+                // .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                // @Bonita: Anonymous auth is used in all public pages and front-end redirects to Appsmith login page
+                // when accessing a protected page with an anonymous user
+                .anonymous()
+                .principal(createAnonymousUser())
+                .and()
+                .authorizeExchange()
+                .pathMatchers("/public/**", "/oauth2/**")
+                .permitAll()
+                .anyExchange()
+                .authenticated();
+
+        // If avec la variable d'env si mode dev ou prod
+        // WebFlux - ReactiveAuthentificationManager => support Username password token
+        //
+        // https://stackoverflow.com/questions/54428840/can-i-use-an-api-call-to-authenticate-to-a-different-application-with-spring-sec
+        // Username password token de l'objet UserDTO
+        if (isBonitaDev()) {
+            AuthenticationWebFilter authenticationFilter =
+                    new TempAuthenticationWebFilter(this.reactiveAuthenticationManagerBonitaImpl);
+            authenticationFilter.setServerAuthenticationConverter(
+                    new ServerAuthenticationConverterBonitaDev("dev.local@mail.com"));
+            authenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+            authenticationFilter.setSecurityContextRepository(new WebSessionServerSecurityContextRepository());
+
+            authorizeExchangeSpec
+                    .and()
+                    .addFilterAt(authenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
+                    .authenticationManager(this.reactiveAuthenticationManagerBonitaImpl);
+
+        } else {
+            authorizeExchangeSpec
+                    .and()
+                    // @Bonita: only keep OIDC login and remove any other login method and login form
+                    // Add Pre Auth rate limit filter before authentication filter
+                    // .addFilterBefore(
                 //         new ConditionalFilter(new PreAuth(rateLimitService), Url.LOGIN_URL),
                 //         SecurityWebFiltersOrder.FORM_LOGIN)
                 // .httpBasic(httpBasicSpec -> httpBasicSpec.authenticationFailureHandler(failureHandler))
@@ -219,23 +295,51 @@ public class SecurityConfig {
                 //         .authenticationFailureHandler(authenticationFailureHandler))
                 // For Github SSO Login, check transformation class: CustomOAuth2UserServiceImpl
                 // For Google SSO Login, check transformation class: CustomOAuth2UserServiceImpl
-                .oauth2Login(oAuth2LoginSpec ->
-                        oAuth2LoginSpec.authorizedClientRepository(new ClientUserRepository(userService, commonConfig)))
-                // .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
-                //         .authenticationFailureHandler(failureHandler)
-                //         .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
+                .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
+                    .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
+                        reactiveClientRegistrationRepository,
+                        commonConfig,
+                        redirectHelper,
+                        oauth2ClientManager))
+                    .authenticationSuccessHandler(authenticationSuccessHandler))
+                    // .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
+                    //         .authenticationFailureHandler(failureHandler)
+                    //         .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
                 //                 reactiveClientRegistrationRepository,
                 //                 commonConfig,
                 //                 redirectHelper,
                 //                 oauth2ClientManager))
                 //         .authenticationSuccessHandler(authenticationSuccessHandler)
                 //         .authenticationFailureHandler(authenticationFailureHandler)
-                //         .authorizedClientRepository(new ClientUserRepository(userService, commonConfig)))
+                //         .authorizedClientRepository(new ClientUserRepository(userService, commonConfig))).logout((logout) ->
+                .logout((logout) ->
+                            logout.logoutUrl(Url.LOGOUT_URL).logoutSuccessHandler(oidcLogoutSuccessHandler()));
                 // .logout()
                 // .logoutUrl(Url.LOGOUT_URL)
                 // .logoutSuccessHandler(new LogoutSuccessHandler(objectMapper, analyticsService))
                 // .and()
-                .build();
+        }
+        return authorizeExchangeSpec.and().build();
+    }
+
+    private boolean isBonitaDev() {
+        System.out.println("### isBonitaDev: " + bonitaProperties.getDeployment() + " ###");
+        return BonitaProperties.DEV.equals(bonitaProperties.getDeployment());
+    }
+
+    /**
+     * @Bonita: Logout handler used to handle the OIDC front-channel logout
+     * TODO: replace with back-channel logout once app smith Spring Boot update PR is merged
+     */
+    private ServerLogoutSuccessHandler oidcLogoutSuccessHandler() {
+        OidcClientInitiatedServerLogoutSuccessHandlerBO oidcLogoutSuccessHandler =
+                new OidcClientInitiatedServerLogoutSuccessHandlerBO(reactiveClientRegistrationRepository);
+
+        // Sets the location that the End-User's User Agent will be redirected to after the logout
+        // TODO: have the frontend logout button send the current URL in the query params and use it here
+        oidcLogoutSuccessHandler.setPostLogoutRedirectUri("/user/login");
+
+        return oidcLogoutSuccessHandler;
     }
 
     /**

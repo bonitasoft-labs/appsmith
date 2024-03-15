@@ -31,6 +31,9 @@ public class User extends BaseDomain implements UserDetails, OidcUser {
     @JsonView(Views.Public.class)
     private String name;
 
+    @JsonView(Views.Internal.class)
+    private String idTokenValue;
+
     @JsonView(Views.Public.class)
     private String email;
 
@@ -155,8 +158,13 @@ public class User extends BaseDomain implements UserDetails, OidcUser {
         return null;
     }
 
+    @JsonView(Views.Internal.class)
+    public String getIdTokenValue() {
+        return this.idTokenValue;
+    }
+
     @Override
-    @JsonView(Views.Public.class)
+    @JsonView(Views.Internal.class)
     public OidcIdToken getIdToken() {
         return null;
     }

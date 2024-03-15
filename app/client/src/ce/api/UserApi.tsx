@@ -94,7 +94,7 @@ export class UserApi extends Api {
   static confirmUserInviteURL = `${UserApi.inviteUserURL}/confirm`;
   static addWorkspaceURL = `${UserApi.usersURL}/addWorkspace`;
   static leaveWorkspaceURL = `${UserApi.usersURL}/leaveWorkspace`;
-  static logoutURL = "v1/logout";
+  static logoutURL = "logout";
   static currentUserURL = "v1/users/me";
   static photoURL = "v1/users/photo";
   static featureFlagsURL = "v1/users/features";
@@ -162,8 +162,13 @@ export class UserApi extends Api {
     return Api.put(UserApi.confirmUserInviteURL, request);
   }
 
-  static async logoutUser(): Promise<AxiosPromise<ApiResponse>> {
-    return Api.post(UserApi.logoutURL);
+  static logoutUser() {
+    // @Bonita: Navigate to the logout endpoint
+    /* return Api.post(UserApi.logoutURL, null, null, {
+      baseURL: "/",
+      }
+    );*/
+    window.location.replace("/logout");
   }
 
   static async uploadPhoto(request: { file: File }): Promise<

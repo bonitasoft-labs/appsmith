@@ -14,6 +14,7 @@ import { ThemeProvider } from "styled-components";
 import VerificationPending from "./VerificationPending";
 import VerifyUser from "./VerifyUser";
 import VerificationError from "./VerificationError";
+import { useHistory } from 'react-router';
 
 const SentryRoute = Sentry.withSentryRouting(Route);
 
@@ -23,6 +24,9 @@ export function UserAuth() {
   const lightTheme = useSelector((state: AppState) =>
     getThemeDetails(state, ThemeMode.LIGHT),
   );
+  //force backend call in order for the backend app authentication mechanism to be called
+  const history = useHistory();
+  history.go(0);
 
   return (
     <ThemeProvider theme={lightTheme}>

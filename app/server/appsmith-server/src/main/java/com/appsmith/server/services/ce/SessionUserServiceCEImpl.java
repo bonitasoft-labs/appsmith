@@ -1,5 +1,6 @@
 package com.appsmith.server.services.ce;
 
+import com.appsmith.server.configurations.bonita.BonitaDevAuthenticationToken;
 import com.appsmith.server.domains.User;
 import com.appsmith.server.exceptions.AppsmithError;
 import com.appsmith.server.exceptions.AppsmithException;
@@ -60,6 +61,8 @@ public class SessionUserServiceCEImpl implements SessionUserServiceCE {
                                 user,
                                 currentToken.getAuthorities(),
                                 ((OAuth2AuthenticationToken) currentToken).getAuthorizedClientRegistrationId());
+                    } else if (currentToken instanceof BonitaDevAuthenticationToken) {
+                        newToken = new BonitaDevAuthenticationToken(user, currentToken.getAuthorities());
                     } else {
                         log.error(
                                 "Unrecognized session token type when updating user in session: {}.",
