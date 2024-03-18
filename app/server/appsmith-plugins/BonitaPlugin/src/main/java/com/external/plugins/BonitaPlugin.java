@@ -45,6 +45,9 @@ public class BonitaPlugin extends BasePlugin {
     @Extension
     public static class BonitaRestApiPluginExecutor extends BaseRestApiPluginExecutor {
 
+        static final String BONITA_SESSION = "JSESSIONID";
+        static final String BONITA_TOKEN = "X-Bonita-API-Token";
+
         public BonitaRestApiPluginExecutor(SharedConfig sharedConfig) {
             super(sharedConfig);
         }
@@ -321,8 +324,8 @@ public class BonitaPlugin extends BasePlugin {
         }
 
         private void addBonitaCookiesToHeader(
-            DatasourceConfiguration datasourceConfiguration,
-            ActionConfiguration actionConfiguration) {
+                DatasourceConfiguration datasourceConfiguration, ActionConfiguration actionConfiguration) {
+            String bonitaToken = "";
             if (bonitaAuthCookies.isEmpty() || datasourceConfigurationChanged(datasourceConfiguration)) {
                 // login User
                 HttpResponse<String> loginResponse = sendLogin(datasourceConfiguration);
@@ -332,7 +335,8 @@ public class BonitaPlugin extends BasePlugin {
                 }
                 List<String> sessionCookie = loginResponse.headers().allValues("Set-Cookie");
                 if (!sessionCookie.isEmpty()) {
-                    bonitaAuthCookies = getBonitaCookies(sessionCookie);
+                    bonitaToken = getCookie(sessionCookie, BONITA_TOKEN);
+                    bonitaAuthCookies = getCookie(sessionCookie, BONITA_SESSION) + "; " + bonitaToken;
                     log.info("Cookies: " + bonitaAuthCookies);
                     BonitaPlugin.datasourceConfiguration = datasourceConfiguration;
                 }
@@ -340,6 +344,8 @@ public class BonitaPlugin extends BasePlugin {
 
             List<Property> headers = actionConfiguration.getHeaders();
             headers.add(new Property("Cookie", bonitaAuthCookies));
+            String bonitaTokenValue = bonitaToken.split("=")[1];
+            headers.add(new Property(BONITA_TOKEN, bonitaTokenValue));
         }
 
         private boolean datasourceConfigurationChanged(DatasourceConfiguration datasourceConfiguration) {
@@ -348,29 +354,23 @@ public class BonitaPlugin extends BasePlugin {
             }
             BasicAuth newAuthentication = (BasicAuth) datasourceConfiguration.getAuthentication();
             BasicAuth authentication = (BasicAuth) BonitaPlugin.datasourceConfiguration.getAuthentication();
-            return
-                !BonitaPlugin.datasourceConfiguration.getUrl().equals(datasourceConfiguration.getUrl())
+            return !BonitaPlugin.datasourceConfiguration.getUrl().equals(datasourceConfiguration.getUrl())
                     || !(newAuthentication.getUsername().equals(authentication.getUsername()))
                     || !((newAuthentication.getPassword().equals(authentication.getPassword())));
         }
 
-        private String getBonitaCookies(List<String> sessionCookie) {
-            String BONITA_SESSION = "JSESSIONID";
-            String BONITA_TOKEN = "X-Bonita-API-Token";
-            String bonitaSession = "";
-            String bonitaToken = "";
+        private String getCookie(List<String> sessionCookie, String cookie) {
+            String cookieValue = "";
             for (String elem : sessionCookie) {
                 String[] props = elem.split(";");
                 for (String prop : props) {
-                    if (prop.contains(BONITA_SESSION)) {
-                        bonitaSession = prop;
-                    }
-                    if (prop.contains(BONITA_TOKEN)) {
-                        bonitaToken = prop;
+                    if (prop.contains(cookie)) {
+                        cookieValue = prop;
+                        break;
                     }
                 }
             }
-            return bonitaSession + "; " + bonitaToken;
+            return cookieValue;
         }
 
         private HttpResponse<String> sendLogin(DatasourceConfiguration datasourceConfiguration) {
