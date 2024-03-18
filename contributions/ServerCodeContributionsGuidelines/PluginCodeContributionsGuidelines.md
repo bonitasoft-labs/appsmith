@@ -28,7 +28,7 @@ This command will generate a folder called `helloWorldPlugin` with default sourc
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <plugin.id>hello-world-plugin</plugin.id>
-        <plugin.class>com.external.plugins.BonitaPlugin</plugin.class>
+        <plugin.class>com.external.plugins.HelloWorldPlugin</plugin.class>
         <plugin.version>1.0-SNAPSHOT</plugin.version>
         <plugin.provider>tech@appsmith.com</plugin.provider>
         <plugin.dependencies/>
@@ -139,7 +139,7 @@ Replace the properties `plugin.id` and `plugin.class` with your plugin name.
 6. Add a file called `plugin.properties` with the following content:
 ```
 plugin.id=hello-world-plugin
-plugin.class=com.external.plugins.BonitaPlugin
+plugin.class=com.external.plugins.HelloWorldPlugin
 plugin.version=1.0-SNAPSHOT
 plugin.provider=tech@appsmith.com
 plugin.dependencies=
@@ -257,9 +257,9 @@ As much as possible, please try to abide by the following code design:
 1. All plugins are part of the package: `com.external.plugins`.
 2. All plugin src code resides in the path: [app/server/appsmith-plugins](https://github.com/appsmithorg/appsmith/tree/release/app/server/appsmith-plugins).
 3. To integrate the new plugin:
-   - add corresponding changes to the file `DatabaseChangelog.java` like
-   [here in DatabaseChangelog.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-server/src/main/java/com/appsmith/server/migrations/DatabaseChangelog.java#L1258).
-   - add your plugin to [this pom.xml file](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/pom.xml).
+  - add corresponding changes to the file `DatabaseChangelog.java` like
+    [here in DatabaseChangelog.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-server/src/main/java/com/appsmith/server/migrations/DatabaseChangelog.java#L1258).
+  - add your plugin to [this pom.xml file](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/pom.xml).
 4. Each plugin must implement all the methods defined by the interface in [PluginExecutor.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-interfaces/src/main/java/com/appsmith/external/plugins/PluginExecutor.java), for example: [MySqlPlugin.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/mysqlPlugin/src/main/java/com/external/plugins/MySqlPlugin.java) and [RestApiPlugin.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/restApiPlugin/src/main/java/com/external/plugins/RestApiPlugin.java).
 5. The form to be filled by the user when creating a new datasource is rendered by the configuration file [form.json](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/firestorePlugin/src/main/resources/form.json). For details, please see [this mapping](https://github.com/appsmithorg/appsmith/tree/release/static/form.png) between `form.json` and the rendered web page.
 6. The form where user enters the query for execution is rendered by the configuration file [editor.json](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/firestorePlugin/src/main/resources/editor.json).
@@ -280,23 +280,23 @@ As much as possible, please try to abide by the following code design:
    for usage. For example, instead of using `"date"` string directly, assign it to a  `private static` identifier like `private static final String DATE_COLUMN_TYPE_NAME = "date";`
 4. Appsmith's API server is powered by [Spring webflux](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html#webflux) and hence expects programmers to
    follow a [reactive model](https://www.reactive-streams.org/).
-   - In case a reactive driver is available for the plugin that you want to add, please use it after verifying
-     that it supports all of the commonly used data types. In case the reactive driver does not support enough data types,
-     please use any other well known and trusted driver.
-   - In case the driver that you wish to use does not follow reactive model, please enforce reactive model as shown
-     in the plugin code [PostgresPlugin.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/postgresPlugin/src/main/java/com/external/plugins/PostgresPlugin.java).
-   - Make sure that your [Mono/Flux](https://projectreactor.io/docs/core/release/reference/index.html#core-features)
-     object is processed on a new dedicated thread by chaining [.subscribeOn(...)](https://projectreactor.io/docs/core/release/reference/index.html#schedulers)
-     method call to the Mono/Flux object. For reference, please check its usage in [PostgresPlugin.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/postgresPlugin/src/main/java/com/external/plugins/PostgresPlugin.java).
+  - In case a reactive driver is available for the plugin that you want to add, please use it after verifying
+    that it supports all of the commonly used data types. In case the reactive driver does not support enough data types,
+    please use any other well known and trusted driver.
+  - In case the driver that you wish to use does not follow reactive model, please enforce reactive model as shown
+    in the plugin code [PostgresPlugin.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/postgresPlugin/src/main/java/com/external/plugins/PostgresPlugin.java).
+  - Make sure that your [Mono/Flux](https://projectreactor.io/docs/core/release/reference/index.html#core-features)
+    object is processed on a new dedicated thread by chaining [.subscribeOn(...)](https://projectreactor.io/docs/core/release/reference/index.html#schedulers)
+    method call to the Mono/Flux object. For reference, please check its usage in [PostgresPlugin.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/postgresPlugin/src/main/java/com/external/plugins/PostgresPlugin.java).
 5. Make sure to handle any exceptions
-    - Always check for a stale connection (i.e. if the connection to the datasource has been closed or invalidated)
-      before query execution and throw an uncaught `StaleConnectionException`.
-      This exception is caught by Appsmith's framework and a new connection is established before running the query.
-      For reference, please check the usage of StaleConnectionException in
-      [PostgresPlugin.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/postgresPlugin/src/main/java/com/external/plugins/PostgresPlugin.java).
-    - Print the exceptions on console along with thread information like `System.out.println(Thread.currentThread().
-      getName() + ": <your
-      error msg> : " + exception.msg);`
+  - Always check for a stale connection (i.e. if the connection to the datasource has been closed or invalidated)
+    before query execution and throw an uncaught `StaleConnectionException`.
+    This exception is caught by Appsmith's framework and a new connection is established before running the query.
+    For reference, please check the usage of StaleConnectionException in
+    [PostgresPlugin.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/postgresPlugin/src/main/java/com/external/plugins/PostgresPlugin.java).
+  - Print the exceptions on console along with thread information like `System.out.println(Thread.currentThread().
+    getName() + ": <your
+    error msg> : " + exception.msg);`
 6. Always check for `null` values before using objects.
 7. Comment your code in hard to understand areas.
 8. In case your method implementation is too large (use your own judgement here), please refactor it into smaller
@@ -308,16 +308,16 @@ As much as possible, please try to abide by the following code design:
 3. Use Mockito framework to test using mock objects whenever testing against a real instance is not possible, for
    example, when using [testcontainers](https://www.testcontainers.org/) is not possible.
 4. Please test the following cases in your unit test file:
-    - Successfully establishing connection to the datasource.
-    - Reject invalid credentials.
-    - Successful query execution.
-    - Stale connection exception (please see the [Source Code](#source-code) section above for details).
-    - In case of a database plugin, test that it is able to fetch tables/collection information from database and key
-      constraints information as well. For example, check out the `testStructure()` method in [PostgresPluginTest.
-      java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/postgresPlugin/src/test/java/com/external/plugins/PostgresPluginTest.java).
+  - Successfully establishing connection to the datasource.
+  - Reject invalid credentials.
+  - Successful query execution.
+  - Stale connection exception (please see the [Source Code](#source-code) section above for details).
+  - In case of a database plugin, test that it is able to fetch tables/collection information from database and key
+    constraints information as well. For example, check out the `testStructure()` method in [PostgresPluginTest.
+    java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/postgresPlugin/src/test/java/com/external/plugins/PostgresPluginTest.java).
 5. Reference test files:
-    - [PostgresPluginTest.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/postgresPlugin/src/test/java/com/external/plugins/PostgresPluginTest.java).
-    - [MySqlPluginTest.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/mysqlPlugin/src/test/java/com/external/plugins/MySqlPluginTest.java).
+  - [PostgresPluginTest.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/postgresPlugin/src/test/java/com/external/plugins/PostgresPluginTest.java).
+  - [MySqlPluginTest.java](https://github.com/appsmithorg/appsmith/blob/release/app/server/appsmith-plugins/mysqlPlugin/src/test/java/com/external/plugins/MySqlPluginTest.java).
 
 ### Code Review
 1. Before you start working on a code change, please check with any of the maintainers regarding the same. You
