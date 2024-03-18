@@ -104,26 +104,26 @@ public class DatabaseChangelog2 {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final Pattern sheetRangePattern =
-        Pattern.compile("https://docs.google.com/spreadsheets/d/([^/]+)/?[^\"]*");
+            Pattern.compile("https://docs.google.com/spreadsheets/d/([^/]+)/?[^\"]*");
 
     private final UpdateSuperUserMigrationHelper updateSuperUserMigrationHelper = new UpdateSuperUserMigrationHelper();
 
     @ChangeSet(order = "001", id = "fix-plugin-title-casing", author = "")
     public void fixPluginTitleCasing(MongoTemplate mongoTemplate) {
         mongoTemplate.updateFirst(
-            query(where(fieldName(QPlugin.plugin.packageName)).is("mysql-plugin")),
-            update(fieldName(QPlugin.plugin.name), "MySQL"),
-            Plugin.class);
+                query(where(fieldName(QPlugin.plugin.packageName)).is("mysql-plugin")),
+                update(fieldName(QPlugin.plugin.name), "MySQL"),
+                Plugin.class);
 
         mongoTemplate.updateFirst(
-            query(where(fieldName(QPlugin.plugin.packageName)).is("mssql-plugin")),
-            update(fieldName(QPlugin.plugin.name), "Microsoft SQL Server"),
-            Plugin.class);
+                query(where(fieldName(QPlugin.plugin.packageName)).is("mssql-plugin")),
+                update(fieldName(QPlugin.plugin.name), "Microsoft SQL Server"),
+                Plugin.class);
 
         mongoTemplate.updateFirst(
-            query(where(fieldName(QPlugin.plugin.packageName)).is("elasticsearch-plugin")),
-            update(fieldName(QPlugin.plugin.name), "Elasticsearch"),
-            Plugin.class);
+                query(where(fieldName(QPlugin.plugin.packageName)).is("elasticsearch-plugin")),
+                update(fieldName(QPlugin.plugin.name), "Elasticsearch"),
+                Plugin.class);
     }
 
     public static void migrateFirestoreActionsFormData(NewAction uqiAction) {
@@ -132,7 +132,7 @@ public class DatabaseChangelog2 {
          * Migrate unpublished action configuration data.
          */
         final Map<String, Object> unpublishedFormData =
-            unpublishedAction.getActionConfiguration().getFormData();
+                unpublishedAction.getActionConfiguration().getFormData();
 
         if (unpublishedFormData != null) {
             final Object command = unpublishedFormData.get("command");
@@ -154,28 +154,28 @@ public class DatabaseChangelog2 {
         }
 
         final String unpublishedBody =
-            unpublishedAction.getActionConfiguration().getBody();
+                unpublishedAction.getActionConfiguration().getBody();
         if (StringUtils.hasLength(unpublishedBody)) {
             convertToFormDataObject(unpublishedFormData, "body", unpublishedBody);
             unpublishedAction.getActionConfiguration().setBody(null);
         }
 
         final String unpublishedPath =
-            unpublishedAction.getActionConfiguration().getPath();
+                unpublishedAction.getActionConfiguration().getPath();
         if (StringUtils.hasLength(unpublishedPath)) {
             convertToFormDataObject(unpublishedFormData, "path", unpublishedPath);
             unpublishedAction.getActionConfiguration().setPath(null);
         }
 
         final String unpublishedNext =
-            unpublishedAction.getActionConfiguration().getNext();
+                unpublishedAction.getActionConfiguration().getNext();
         if (StringUtils.hasLength(unpublishedNext)) {
             convertToFormDataObject(unpublishedFormData, "next", unpublishedNext);
             unpublishedAction.getActionConfiguration().setNext(null);
         }
 
         final String unpublishedPrev =
-            unpublishedAction.getActionConfiguration().getPrev();
+                unpublishedAction.getActionConfiguration().getPrev();
         if (StringUtils.hasLength(unpublishedPrev)) {
             convertToFormDataObject(unpublishedFormData, "prev", unpublishedPrev);
             unpublishedAction.getActionConfiguration().setPrev(null);
@@ -186,10 +186,10 @@ public class DatabaseChangelog2 {
          */
         ActionDTO publishedAction = uqiAction.getPublishedAction();
         if (publishedAction != null
-            && publishedAction.getActionConfiguration() != null
-            && publishedAction.getActionConfiguration().getFormData() != null) {
+                && publishedAction.getActionConfiguration() != null
+                && publishedAction.getActionConfiguration().getFormData() != null) {
             final Map<String, Object> publishedFormData =
-                publishedAction.getActionConfiguration().getFormData();
+                    publishedAction.getActionConfiguration().getFormData();
 
             final Object command = publishedFormData.get("command");
 
@@ -209,28 +209,28 @@ public class DatabaseChangelog2 {
             });
 
             final String publishedBody =
-                publishedAction.getActionConfiguration().getBody();
+                    publishedAction.getActionConfiguration().getBody();
             if (StringUtils.hasLength(publishedBody)) {
                 convertToFormDataObject(publishedFormData, "body", publishedBody);
                 publishedAction.getActionConfiguration().setBody(null);
             }
 
             final String publishedPath =
-                publishedAction.getActionConfiguration().getPath();
+                    publishedAction.getActionConfiguration().getPath();
             if (StringUtils.hasLength(publishedPath)) {
                 convertToFormDataObject(publishedFormData, "path", publishedPath);
                 publishedAction.getActionConfiguration().setPath(null);
             }
 
             final String publishedNext =
-                publishedAction.getActionConfiguration().getNext();
+                    publishedAction.getActionConfiguration().getNext();
             if (StringUtils.hasLength(publishedNext)) {
                 convertToFormDataObject(publishedFormData, "next", publishedNext);
                 publishedAction.getActionConfiguration().setNext(null);
             }
 
             final String publishedPrev =
-                publishedAction.getActionConfiguration().getPrev();
+                    publishedAction.getActionConfiguration().getPrev();
             if (StringUtils.hasLength(publishedPrev)) {
                 convertToFormDataObject(publishedFormData, "prev", publishedPrev);
                 publishedAction.getActionConfiguration().setPrev(null);
@@ -282,7 +282,7 @@ public class DatabaseChangelog2 {
     }
 
     private static void convertToFormDataObject(
-        Map<String, Object> formDataMap, String key, Object value, boolean hasBinding) {
+            Map<String, Object> formDataMap, String key, Object value, boolean hasBinding) {
         if (value == null) {
             return;
         }
@@ -333,8 +333,8 @@ public class DatabaseChangelog2 {
         convertToFormDataObject(f, "bucket", formData.get("bucket"));
         convertToFormDataObject(f, "smartSubstitution", formData.get("smartSubstitution"));
         switch ((String) command) {
-            // No case for delete single and multiple since they only had bucket that needed
-            // migration
+                // No case for delete single and multiple since they only had bucket that needed
+                // migration
             case "LIST":
                 final Map listMap = (Map) formData.get("list");
                 if (listMap == null) {
@@ -423,8 +423,8 @@ public class DatabaseChangelog2 {
             dynamicBindingPathList.stream().forEach(dynamicBindingPath -> {
                 final String currentBinding = dynamicBindingPath.getKey();
                 final Optional<String> matchingBinding = dynamicBindingMapper.keySet().stream()
-                    .filter(currentBinding::startsWith)
-                    .findFirst();
+                        .filter(currentBinding::startsWith)
+                        .findFirst();
                 if (matchingBinding.isPresent()) {
                     final String newBindingPrefix = dynamicBindingMapper.get(matchingBinding.get());
                     dynamicBindingPath.setKey(currentBinding.replace(matchingBinding.get(), newBindingPrefix));
@@ -586,8 +586,8 @@ public class DatabaseChangelog2 {
             dynamicBindingPathList.stream().forEach(dynamicBindingPath -> {
                 final String currentBinding = dynamicBindingPath.getKey();
                 final Optional<String> matchingBinding = dynamicBindingMapper.keySet().stream()
-                    .filter(currentBinding::startsWith)
-                    .findFirst();
+                        .filter(currentBinding::startsWith)
+                        .findFirst();
                 if (matchingBinding.isPresent()) {
                     final String newBindingPrefix = dynamicBindingMapper.get(matchingBinding.get());
                     dynamicBindingPath.setKey(currentBinding.replace(matchingBinding.get(), newBindingPrefix));
@@ -608,31 +608,31 @@ public class DatabaseChangelog2 {
     public static void doAddIndexesForGit(MongoTemplate mongoTemplate) {
         String defaultResources = fieldName(QBranchAwareDomain.branchAwareDomain.defaultResources);
         ensureIndexes(
-            mongoTemplate,
-            ActionCollection.class,
-            makeIndex(
-                defaultResources + "." + FieldName.APPLICATION_ID,
-                fieldName(QBaseDomain.baseDomain.gitSyncId),
-                FieldName.DELETED)
-                .named("defaultApplicationId_gitSyncId_deleted"));
+                mongoTemplate,
+                ActionCollection.class,
+                makeIndex(
+                                defaultResources + "." + FieldName.APPLICATION_ID,
+                                fieldName(QBaseDomain.baseDomain.gitSyncId),
+                                FieldName.DELETED)
+                        .named("defaultApplicationId_gitSyncId_deleted"));
 
         ensureIndexes(
-            mongoTemplate,
-            NewAction.class,
-            makeIndex(
-                defaultResources + "." + FieldName.APPLICATION_ID,
-                fieldName(QBaseDomain.baseDomain.gitSyncId),
-                FieldName.DELETED)
-                .named("defaultApplicationId_gitSyncId_deleted"));
+                mongoTemplate,
+                NewAction.class,
+                makeIndex(
+                                defaultResources + "." + FieldName.APPLICATION_ID,
+                                fieldName(QBaseDomain.baseDomain.gitSyncId),
+                                FieldName.DELETED)
+                        .named("defaultApplicationId_gitSyncId_deleted"));
 
         ensureIndexes(
-            mongoTemplate,
-            NewPage.class,
-            makeIndex(
-                defaultResources + "." + FieldName.APPLICATION_ID,
-                fieldName(QBaseDomain.baseDomain.gitSyncId),
-                FieldName.DELETED)
-                .named("defaultApplicationId_gitSyncId_deleted"));
+                mongoTemplate,
+                NewPage.class,
+                makeIndex(
+                                defaultResources + "." + FieldName.APPLICATION_ID,
+                                fieldName(QBaseDomain.baseDomain.gitSyncId),
+                                FieldName.DELETED)
+                        .named("defaultApplicationId_gitSyncId_deleted"));
     }
 
     /**
@@ -672,45 +672,45 @@ public class DatabaseChangelog2 {
         dropIndexIfExists(mongoTemplate, Datasource.class, "workspace_datasource_deleted_compound_index");
 
         ensureIndexes(
-            mongoTemplate,
-            Application.class,
-            makeIndex(
-                fieldName(QApplication.application.workspaceId),
-                fieldName(QApplication.application.name),
-                fieldName(QApplication.application.deletedAt),
-                "gitApplicationMetadata.remoteUrl",
-                "gitApplicationMetadata.branchName")
-                .unique()
-                .named("workspace_app_deleted_gitApplicationMetadata"));
+                mongoTemplate,
+                Application.class,
+                makeIndex(
+                                fieldName(QApplication.application.workspaceId),
+                                fieldName(QApplication.application.name),
+                                fieldName(QApplication.application.deletedAt),
+                                "gitApplicationMetadata.remoteUrl",
+                                "gitApplicationMetadata.branchName")
+                        .unique()
+                        .named("workspace_app_deleted_gitApplicationMetadata"));
         ensureIndexes(
-            mongoTemplate,
-            Datasource.class,
-            makeIndex(
-                fieldName(QDatasource.datasource.workspaceId),
-                fieldName(QDatasource.datasource.name),
-                fieldName(QDatasource.datasource.deletedAt))
-                .unique()
-                .named("workspace_datasource_deleted_compound_index"));
+                mongoTemplate,
+                Datasource.class,
+                makeIndex(
+                                fieldName(QDatasource.datasource.workspaceId),
+                                fieldName(QDatasource.datasource.name),
+                                fieldName(QDatasource.datasource.deletedAt))
+                        .unique()
+                        .named("workspace_datasource_deleted_compound_index"));
     }
 
     public static void migrateGoogleSheetsToUqi(NewAction uqiAction) {
 
         final Map<Integer, List<String>> googleSheetsMigrationMap = Map.ofEntries(
-            Map.entry(0, List.of("command.data", "entityType.data")),
-            Map.entry(1, List.of("sheetUrl.data")),
-            Map.entry(2, List.of("range.data")),
-            Map.entry(3, List.of("spreadsheetName.data")),
-            Map.entry(4, List.of("tableHeaderIndex.data")),
-            Map.entry(5, List.of("queryFormat.data")),
-            Map.entry(6, List.of("pagination.data.limit")),
-            Map.entry(7, List.of("sheetName.data")),
-            Map.entry(8, List.of("pagination.data.offset")),
-            Map.entry(9, List.of("rowObjects.data")),
-            Map.entry(10, List.of("rowObjects.data")),
-            Map.entry(11, List.of("rowIndex.data")),
-            Map.entry(12, List.of("")), // We do not expect deleteFormat to have been dynamically bound at all
-            Map.entry(13, List.of("smartSubstitution.data")),
-            Map.entry(14, List.of("where.data")));
+                Map.entry(0, List.of("command.data", "entityType.data")),
+                Map.entry(1, List.of("sheetUrl.data")),
+                Map.entry(2, List.of("range.data")),
+                Map.entry(3, List.of("spreadsheetName.data")),
+                Map.entry(4, List.of("tableHeaderIndex.data")),
+                Map.entry(5, List.of("queryFormat.data")),
+                Map.entry(6, List.of("pagination.data.limit")),
+                Map.entry(7, List.of("sheetName.data")),
+                Map.entry(8, List.of("pagination.data.offset")),
+                Map.entry(9, List.of("rowObjects.data")),
+                Map.entry(10, List.of("rowObjects.data")),
+                Map.entry(11, List.of("rowIndex.data")),
+                Map.entry(12, List.of("")), // We do not expect deleteFormat to have been dynamically bound at all
+                Map.entry(13, List.of("smartSubstitution.data")),
+                Map.entry(14, List.of("where.data")));
 
         ActionDTO unpublishedAction = uqiAction.getUnpublishedAction();
         /**
@@ -732,7 +732,7 @@ public class DatabaseChangelog2 {
 
         List<Property> dynamicBindingPathList = unpublishedAction.getDynamicBindingPathList();
         List<Property> newDynamicBindingPathList = getUpdatedDynamicBindingPathList(
-            dynamicBindingPathList, objectMapper, uqiAction, googleSheetsMigrationMap);
+                dynamicBindingPathList, objectMapper, uqiAction, googleSheetsMigrationMap);
         unpublishedAction.setDynamicBindingPathList(newDynamicBindingPathList);
     }
 
@@ -745,7 +745,7 @@ public class DatabaseChangelog2 {
         }
 
         final List<Property> pluginSpecifiedTemplates =
-            action.getActionConfiguration().getPluginSpecifiedTemplates();
+                action.getActionConfiguration().getPluginSpecifiedTemplates();
 
         if (pluginSpecifiedTemplates == null || pluginSpecifiedTemplates.isEmpty()) {
             // Nothing to do with this action, it is already incorrectly configured
@@ -802,55 +802,55 @@ public class DatabaseChangelog2 {
         switch (pluginSpecifiedTemplatesSize) {
             case 15:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(14))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(14).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(14).getValue())) {
                     convertToFormDataObject(
-                        f,
-                        "where",
-                        updateWhereClauseFormat(
-                            pluginSpecifiedTemplates.get(14).getValue()));
+                            f,
+                            "where",
+                            updateWhereClauseFormat(
+                                    pluginSpecifiedTemplates.get(14).getValue()));
                 }
             case 14:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(13))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(13).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(13).getValue())) {
                     convertToFormDataObject(
-                        f,
-                        "smartSubstitution",
-                        pluginSpecifiedTemplates.get(13).getValue());
+                            f,
+                            "smartSubstitution",
+                            pluginSpecifiedTemplates.get(13).getValue());
                 }
             case 13:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(12))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(12).getValue())
-                    && "DELETE".equals(oldCommand)) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(12).getValue())
+                        && "DELETE".equals(oldCommand)) {
                     convertToFormDataObject(
-                        f, "entityType", pluginSpecifiedTemplates.get(12).getValue());
+                            f, "entityType", pluginSpecifiedTemplates.get(12).getValue());
                 }
             case 12:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(11))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(11).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(11).getValue())) {
                     convertToFormDataObject(
-                        f, "rowIndex", pluginSpecifiedTemplates.get(11).getValue());
+                            f, "rowIndex", pluginSpecifiedTemplates.get(11).getValue());
                 }
             case 11:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(10))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(10).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(10).getValue())) {
                     if (List.of("BULK_APPEND", "BULK_UPDATE", "CREATE").contains(oldCommand)) {
                         convertToFormDataObject(
-                            f,
-                            "rowObjects",
-                            pluginSpecifiedTemplates.get(10).getValue());
+                                f,
+                                "rowObjects",
+                                pluginSpecifiedTemplates.get(10).getValue());
                     }
                 }
             case 10:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(9))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(9).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(9).getValue())) {
                     if (List.of("APPEND", "UPDATE").contains(oldCommand)) {
                         convertToFormDataObject(
-                            f, "rowObjects", pluginSpecifiedTemplates.get(9).getValue());
+                                f, "rowObjects", pluginSpecifiedTemplates.get(9).getValue());
                     }
                 }
             case 9:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(8))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(8).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(8).getValue())) {
                     if (!f.containsKey("pagination")) {
                         final HashMap<String, Object> map = new HashMap<>();
                         map.put("offset", pluginSpecifiedTemplates.get(8).getValue());
@@ -861,12 +861,12 @@ public class DatabaseChangelog2 {
                         final Map<String, Object> componentData = (Map<String, Object>) pagination.get("componentData");
                         data.put("offset", pluginSpecifiedTemplates.get(8).getValue());
                         componentData.put(
-                            "offset", pluginSpecifiedTemplates.get(8).getValue());
+                                "offset", pluginSpecifiedTemplates.get(8).getValue());
                     }
                 }
             case 8:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(7))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(7).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(7).getValue())) {
                     // Sheet name will now have a dropdown component that is selected from a pre-populated list.
                     // Bindings would need to be placed in the JS mode
                     boolean hasBinding = false;
@@ -876,11 +876,11 @@ public class DatabaseChangelog2 {
                         });
                     }
                     convertToFormDataObject(
-                        f, "sheetName", pluginSpecifiedTemplates.get(7).getValue(), hasBinding);
+                            f, "sheetName", pluginSpecifiedTemplates.get(7).getValue(), hasBinding);
                 }
             case 7:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(6))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(6).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(6).getValue())) {
                     if (!f.containsKey("pagination")) {
                         final HashMap<String, Object> map = new HashMap<>();
                         map.put("limit", pluginSpecifiedTemplates.get(6).getValue());
@@ -891,40 +891,40 @@ public class DatabaseChangelog2 {
                         final Map<String, Object> componentData = (Map<String, Object>) pagination.get("componentData");
                         data.put("limit", pluginSpecifiedTemplates.get(6).getValue());
                         componentData.put(
-                            "limit", pluginSpecifiedTemplates.get(6).getValue());
+                                "limit", pluginSpecifiedTemplates.get(6).getValue());
                     }
                 }
             case 6:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(5))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(5).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(5).getValue())) {
                     convertToFormDataObject(
-                        f, "queryFormat", pluginSpecifiedTemplates.get(5).getValue());
+                            f, "queryFormat", pluginSpecifiedTemplates.get(5).getValue());
                 }
             case 5:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(4))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(4).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(4).getValue())) {
                     convertToFormDataObject(
-                        f,
-                        "tableHeaderIndex",
-                        pluginSpecifiedTemplates.get(4).getValue());
+                            f,
+                            "tableHeaderIndex",
+                            pluginSpecifiedTemplates.get(4).getValue());
                 }
             case 4:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(3))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(3).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(3).getValue())) {
                     convertToFormDataObject(
-                        f,
-                        "spreadsheetName",
-                        pluginSpecifiedTemplates.get(3).getValue());
+                            f,
+                            "spreadsheetName",
+                            pluginSpecifiedTemplates.get(3).getValue());
                 }
             case 3:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(2))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(2).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(2).getValue())) {
                     convertToFormDataObject(
-                        f, "range", pluginSpecifiedTemplates.get(2).getValue());
+                            f, "range", pluginSpecifiedTemplates.get(2).getValue());
                 }
             case 2:
                 if (!ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(1))
-                    && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(1).getValue())) {
+                        && !ObjectUtils.isEmpty(pluginSpecifiedTemplates.get(1).getValue())) {
                     // Sheet URL will now have a dropdown component that is selected from a pre-populated list.
                     // Bindings would need to be placed in the JS mode
                     boolean hasBinding = false;
@@ -934,12 +934,12 @@ public class DatabaseChangelog2 {
                         });
                     }
                     final String spreadsheetUrl =
-                        (String) pluginSpecifiedTemplates.get(1).getValue();
+                            (String) pluginSpecifiedTemplates.get(1).getValue();
                     final Matcher matcher = sheetRangePattern.matcher(spreadsheetUrl);
 
                     if (matcher.find()) {
                         final String newSpreadsheetUrl = matcher.replaceAll(
-                            "https://docs.google.com/spreadsheets/d/" + matcher.group(1) + "/edit");
+                                "https://docs.google.com/spreadsheets/d/" + matcher.group(1) + "/edit");
                         convertToFormDataObject(f, "sheetUrl", newSpreadsheetUrl, hasBinding);
                     } else {
                         convertToFormDataObject(f, "sheetUrl", spreadsheetUrl, hasBinding);
@@ -997,8 +997,8 @@ public class DatabaseChangelog2 {
 
         Query userQuery = new Query();
         userQuery
-            .addCriteria(where(fieldName(QUser.user.email)).is(FieldName.ANONYMOUS_USER))
-            .addCriteria(where(fieldName(QUser.user.tenantId)).is(tenant.getId()));
+                .addCriteria(where(fieldName(QUser.user.email)).is(FieldName.ANONYMOUS_USER))
+                .addCriteria(where(fieldName(QUser.user.tenantId)).is(tenant.getId()));
         User anonymousUser = mongoTemplate.findOne(userQuery, User.class);
 
         if (anonymousUser == null) {
@@ -1018,7 +1018,7 @@ public class DatabaseChangelog2 {
     public void addInstanceConfigurationPlaceHolder(MongoTemplate mongoTemplate) {
         Query instanceConfigurationQuery = new Query();
         instanceConfigurationQuery.addCriteria(
-            where(fieldName(QConfig.config1.name)).is(FieldName.INSTANCE_CONFIG));
+                where(fieldName(QConfig.config1.name)).is(FieldName.INSTANCE_CONFIG));
         Config instanceAdminConfiguration = mongoTemplate.findOne(instanceConfigurationQuery, Config.class);
 
         if (instanceAdminConfiguration != null) {
@@ -1033,15 +1033,15 @@ public class DatabaseChangelog2 {
         PermissionGroup instanceManagerPermissionGroup = new PermissionGroup();
         instanceManagerPermissionGroup.setName(FieldName.INSTANCE_ADMIN_ROLE);
         instanceManagerPermissionGroup.setPermissions(
-            Set.of(new Permission(savedInstanceConfig.getId(), MANAGE_INSTANCE_CONFIGURATION)));
+                Set.of(new Permission(savedInstanceConfig.getId(), MANAGE_INSTANCE_CONFIGURATION)));
 
         Query adminUserQuery = new Query();
         adminUserQuery.addCriteria(where(fieldName(QBaseDomain.baseDomain.policies))
-            .elemMatch(where("permission").is(MANAGE_INSTANCE_ENV.getValue())));
+                .elemMatch(where("permission").is(MANAGE_INSTANCE_ENV.getValue())));
         List<User> adminUsers = mongoTemplate.find(adminUserQuery, User.class);
 
         instanceManagerPermissionGroup.setAssignedToUserIds(
-            adminUsers.stream().map(User::getId).collect(Collectors.toSet()));
+                adminUsers.stream().map(User::getId).collect(Collectors.toSet()));
 
         PermissionGroup savedPermissionGroup = mongoTemplate.save(instanceManagerPermissionGroup);
 
@@ -1049,13 +1049,13 @@ public class DatabaseChangelog2 {
         savedInstanceConfig.setConfig(new JSONObject(Map.of(DEFAULT_PERMISSION_GROUP, savedPermissionGroup.getId())));
 
         Policy editConfigPolicy = Policy.builder()
-            .permission(MANAGE_INSTANCE_CONFIGURATION.getValue())
-            .permissionGroups(Set.of(savedPermissionGroup.getId()))
-            .build();
+                .permission(MANAGE_INSTANCE_CONFIGURATION.getValue())
+                .permissionGroups(Set.of(savedPermissionGroup.getId()))
+                .build();
         Policy readConfigPolicy = Policy.builder()
-            .permission(READ_INSTANCE_CONFIGURATION.getValue())
-            .permissionGroups(Set.of(savedPermissionGroup.getId()))
-            .build();
+                .permission(READ_INSTANCE_CONFIGURATION.getValue())
+                .permissionGroups(Set.of(savedPermissionGroup.getId()))
+                .build();
 
         savedInstanceConfig.setPolicies(new HashSet<>(Set.of(editConfigPolicy, readConfigPolicy)));
 
@@ -1063,23 +1063,23 @@ public class DatabaseChangelog2 {
 
         // Also give the permission group permission to unassign & assign & read to itself
         Policy updatePermissionGroupPolicy = Policy.builder()
-            .permission(AclPermission.UNASSIGN_PERMISSION_GROUPS.getValue())
-            .permissionGroups(Set.of(savedPermissionGroup.getId()))
-            .build();
+                .permission(AclPermission.UNASSIGN_PERMISSION_GROUPS.getValue())
+                .permissionGroups(Set.of(savedPermissionGroup.getId()))
+                .build();
 
         Policy assignPermissionGroupPolicy = Policy.builder()
-            .permission(ASSIGN_PERMISSION_GROUPS.getValue())
-            .permissionGroups(Set.of(savedPermissionGroup.getId()))
-            .build();
+                .permission(ASSIGN_PERMISSION_GROUPS.getValue())
+                .permissionGroups(Set.of(savedPermissionGroup.getId()))
+                .build();
 
         savedPermissionGroup.setPolicies(
-            new HashSet<>(Set.of(updatePermissionGroupPolicy, assignPermissionGroupPolicy)));
+                new HashSet<>(Set.of(updatePermissionGroupPolicy, assignPermissionGroupPolicy)));
 
         Set<Permission> permissions = new HashSet<>(savedPermissionGroup.getPermissions());
         permissions.addAll(Set.of(
-            new Permission(savedPermissionGroup.getId(), AclPermission.UNASSIGN_PERMISSION_GROUPS),
-            new Permission(savedPermissionGroup.getId(), ASSIGN_PERMISSION_GROUPS),
-            new Permission(savedPermissionGroup.getId(), READ_PERMISSION_GROUP_MEMBERS)));
+                new Permission(savedPermissionGroup.getId(), AclPermission.UNASSIGN_PERMISSION_GROUPS),
+                new Permission(savedPermissionGroup.getId(), ASSIGN_PERMISSION_GROUPS),
+                new Permission(savedPermissionGroup.getId(), READ_PERMISSION_GROUP_MEMBERS)));
         savedPermissionGroup.setPermissions(permissions);
 
         mongoTemplate.save(savedPermissionGroup);
@@ -1089,7 +1089,7 @@ public class DatabaseChangelog2 {
     public void addAnonymousUserPermissionGroup(MongoTemplate mongoTemplate) {
         Query anonymousUserPermissionConfig = new Query();
         anonymousUserPermissionConfig.addCriteria(
-            where(fieldName(QConfig.config1.name)).is(FieldName.PUBLIC_PERMISSION_GROUP));
+                where(fieldName(QConfig.config1.name)).is(FieldName.PUBLIC_PERMISSION_GROUP));
 
         Config publicPermissionGroupConfig = mongoTemplate.findOne(anonymousUserPermissionConfig, Config.class);
 
@@ -1107,8 +1107,8 @@ public class DatabaseChangelog2 {
 
         Query userQuery = new Query();
         userQuery
-            .addCriteria(where(fieldName(QUser.user.email)).is(FieldName.ANONYMOUS_USER))
-            .addCriteria(where(fieldName(QUser.user.tenantId)).is(tenant.getId()));
+                .addCriteria(where(fieldName(QUser.user.email)).is(FieldName.ANONYMOUS_USER))
+                .addCriteria(where(fieldName(QUser.user.tenantId)).is(tenant.getId()));
         User anonymousUser = mongoTemplate.findOne(userQuery, User.class);
 
         // Give access to anonymous user to the permission group.
@@ -1119,7 +1119,7 @@ public class DatabaseChangelog2 {
         publicPermissionGroupConfig.setName(FieldName.PUBLIC_PERMISSION_GROUP);
 
         publicPermissionGroupConfig.setConfig(
-            new JSONObject(Map.of(PERMISSION_GROUP_ID, savedPermissionGroup.getId())));
+                new JSONObject(Map.of(PERMISSION_GROUP_ID, savedPermissionGroup.getId())));
 
         mongoTemplate.save(publicPermissionGroupConfig);
         return;
@@ -1129,15 +1129,15 @@ public class DatabaseChangelog2 {
     public void createThemesIndices(MongoTemplate mongoTemplate) {
 
         Index systemThemeIndex = new Index()
-            .on(fieldName(QTheme.theme.isSystemTheme), Sort.Direction.ASC)
-            .named("system_theme_index")
-            .background();
+                .on(fieldName(QTheme.theme.isSystemTheme), Sort.Direction.ASC)
+                .named("system_theme_index")
+                .background();
 
         Index applicationIdIndex = new Index()
-            .on(fieldName(QTheme.theme.applicationId), Sort.Direction.ASC)
-            .on(FieldName.DELETED, Sort.Direction.ASC)
-            .named("application_id_index")
-            .background();
+                .on(fieldName(QTheme.theme.applicationId), Sort.Direction.ASC)
+                .on(FieldName.DELETED, Sort.Direction.ASC)
+                .named("application_id_index")
+                .background();
 
         dropIndexIfExists(mongoTemplate, Theme.class, "system_theme_index");
         dropIndexIfExists(mongoTemplate, Theme.class, "application_id_index");
@@ -1149,24 +1149,24 @@ public class DatabaseChangelog2 {
     public void createSystemThemes3(MongoTemplate mongoTemplate) throws IOException {
 
         final String themesJson = StreamUtils.copyToString(
-            new DefaultResourceLoader().getResource("system-themes.json").getInputStream(),
-            Charset.defaultCharset());
+                new DefaultResourceLoader().getResource("system-themes.json").getInputStream(),
+                Charset.defaultCharset());
 
         Theme[] themes = new GsonBuilder()
-            .registerTypeAdapter(Instant.class, new ISOStringToInstantConverter())
-            .create()
-            .fromJson(themesJson, Theme[].class);
+                .registerTypeAdapter(Instant.class, new ISOStringToInstantConverter())
+                .create()
+                .fromJson(themesJson, Theme[].class);
 
         // Make this theme accessible to anonymous users.
         Query anonymousUserPermissionConfig = new Query();
         anonymousUserPermissionConfig.addCriteria(
-            where(fieldName(QConfig.config1.name)).is(FieldName.PUBLIC_PERMISSION_GROUP));
+                where(fieldName(QConfig.config1.name)).is(FieldName.PUBLIC_PERMISSION_GROUP));
         Config publicPermissionGroupConfig = mongoTemplate.findOne(anonymousUserPermissionConfig, Config.class);
 
         String permissionGroupId = publicPermissionGroupConfig.getConfig().getAsString(PERMISSION_GROUP_ID);
 
         PermissionGroup publicPermissionGroup =
-            mongoTemplate.findOne(query(where("_id").is(permissionGroupId)), PermissionGroup.class);
+                mongoTemplate.findOne(query(where("_id").is(permissionGroupId)), PermissionGroup.class);
 
         // Initialize the permissions for the role
         HashSet<Permission> permissions = new HashSet<>();
@@ -1175,18 +1175,18 @@ public class DatabaseChangelog2 {
         }
 
         Policy policyWithCurrentPermission = Policy.builder()
-            .permission(READ_THEMES.getValue())
-            .permissionGroups(Set.of(publicPermissionGroup.getId()))
-            .build();
+                .permission(READ_THEMES.getValue())
+                .permissionGroups(Set.of(publicPermissionGroup.getId()))
+                .build();
 
         for (Theme theme : themes) {
             theme.setSystemTheme(true);
             theme.setCreatedAt(Instant.now());
             theme.setPolicies(new HashSet<>(Set.of(policyWithCurrentPermission)));
             Query query = new Query(Criteria.where(fieldName(QTheme.theme.name))
-                .is(theme.getName())
-                .and(fieldName(QTheme.theme.isSystemTheme))
-                .is(true));
+                    .is(theme.getName())
+                    .and(fieldName(QTheme.theme.isSystemTheme))
+                    .is(true));
 
             Theme savedTheme = mongoTemplate.findOne(query, Theme.class);
             if (savedTheme == null) { // this theme does not exist, create it
@@ -1206,10 +1206,10 @@ public class DatabaseChangelog2 {
             // Add the access to this theme to the public permission group
             Theme finalSavedTheme = savedTheme;
             boolean isThemePermissionPresent = permissions.stream()
-                .filter(p -> p.getAclPermission().equals(READ_THEMES)
-                    && p.getDocumentId().equals(finalSavedTheme.getId()))
-                .findFirst()
-                .isPresent();
+                    .filter(p -> p.getAclPermission().equals(READ_THEMES)
+                            && p.getDocumentId().equals(finalSavedTheme.getId()))
+                    .findFirst()
+                    .isPresent();
             if (!isThemePermissionPresent) {
                 permissions.add(new Permission(finalSavedTheme.getId(), READ_THEMES));
             }
@@ -1229,12 +1229,12 @@ public class DatabaseChangelog2 {
 
         dropIndexIfExists(mongoTemplate, PermissionGroup.class, "permission_group_workspace_deleted_compound_index");
         dropIndexIfExists(
-            mongoTemplate, PermissionGroup.class, "permission_group_assignedUserIds_deleted_compound_index");
+                mongoTemplate, PermissionGroup.class, "permission_group_assignedUserIds_deleted_compound_index");
         dropIndexIfExists(mongoTemplate, PermissionGroup.class, "permission_group_assignedUserIds_deleted");
 
         Index assignedToUserIds_deleted_compound_index = makeIndex(
-            fieldName(QPermissionGroup.permissionGroup.assignedToUserIds), FieldName.DELETED)
-            .named("permission_group_assignedUserIds_deleted");
+                        fieldName(QPermissionGroup.permissionGroup.assignedToUserIds), FieldName.DELETED)
+                .named("permission_group_assignedUserIds_deleted");
 
         ensureIndexes(mongoTemplate, PermissionGroup.class, assignedToUserIds_deleted_compound_index);
     }
@@ -1248,10 +1248,10 @@ public class DatabaseChangelog2 {
      */
     @ChangeSet(order = "10000", id = "update-super-users", author = "", runAlways = true)
     public void updateSuperUsers(
-        MongoTemplate mongoTemplate,
-        CacheableRepositoryHelper cacheableRepositoryHelper,
-        PolicySolution policySolution,
-        PolicyGenerator policyGenerator) {
+            MongoTemplate mongoTemplate,
+            CacheableRepositoryHelper cacheableRepositoryHelper,
+            PolicySolution policySolution,
+            PolicyGenerator policyGenerator) {
         // Read the admin emails from the environment and update the super users accordingly
         String adminEmailsStr = System.getenv(String.valueOf(APPSMITH_ADMIN_EMAILS));
 
@@ -1259,18 +1259,18 @@ public class DatabaseChangelog2 {
 
         Query instanceConfigurationQuery = new Query();
         instanceConfigurationQuery.addCriteria(
-            where(fieldName(QConfig.config1.name)).is(FieldName.INSTANCE_CONFIG));
+                where(fieldName(QConfig.config1.name)).is(FieldName.INSTANCE_CONFIG));
         Config instanceAdminConfiguration = mongoTemplate.findOne(instanceConfigurationQuery, Config.class);
 
         String instanceAdminPermissionGroupId =
-            (String) instanceAdminConfiguration.getConfig().get(DEFAULT_PERMISSION_GROUP);
+                (String) instanceAdminConfiguration.getConfig().get(DEFAULT_PERMISSION_GROUP);
 
         Query permissionGroupQuery = new Query();
         permissionGroupQuery
-            .addCriteria(
-                where(fieldName(QPermissionGroup.permissionGroup.id)).is(instanceAdminPermissionGroupId))
-            .fields()
-            .include(fieldName(QPermissionGroup.permissionGroup.assignedToUserIds));
+                .addCriteria(
+                        where(fieldName(QPermissionGroup.permissionGroup.id)).is(instanceAdminPermissionGroupId))
+                .fields()
+                .include(fieldName(QPermissionGroup.permissionGroup.assignedToUserIds));
         PermissionGroup instanceAdminPG = mongoTemplate.findOne(permissionGroupQuery, PermissionGroup.class);
 
         Query tenantQuery = new Query();
@@ -1278,22 +1278,22 @@ public class DatabaseChangelog2 {
         Tenant tenant = mongoTemplate.findOne(tenantQuery, Tenant.class);
 
         Set<String> userIds = adminEmails.stream()
-            .map(email -> email.trim())
-            .map(String::toLowerCase)
-            .map(email -> {
-                Query userQuery = new Query();
-                userQuery.addCriteria(where(fieldName(QUser.user.email)).is(email));
-                User user = mongoTemplate.findOne(userQuery, User.class);
+                .map(email -> email.trim())
+                .map(String::toLowerCase)
+                .map(email -> {
+                    Query userQuery = new Query();
+                    userQuery.addCriteria(where(fieldName(QUser.user.email)).is(email));
+                    User user = mongoTemplate.findOne(userQuery, User.class);
 
-                if (user == null) {
-                    log.info("Creating super user with username {}", email);
-                    user = updateSuperUserMigrationHelper.createNewUser(
-                        email, tenant, instanceAdminPG, mongoTemplate, policySolution, policyGenerator);
-                }
+                    if (user == null) {
+                        log.info("Creating super user with username {}", email);
+                        user = updateSuperUserMigrationHelper.createNewUser(
+                                email, tenant, instanceAdminPG, mongoTemplate, policySolution, policyGenerator);
+                    }
 
-                return user.getId();
-            })
-            .collect(Collectors.toSet());
+                    return user.getId();
+                })
+                .collect(Collectors.toSet());
 
         Set<String> oldSuperUsers = instanceAdminPG.getAssignedToUserIds();
         Set<String> updatedUserIds = findSymmetricDiff(oldSuperUsers, userIds);
@@ -1305,31 +1305,31 @@ public class DatabaseChangelog2 {
 
     @ChangeSet(order = "034", id = "update-bad-theme-state", author = "")
     public void updateBadThemeState(
-        MongoTemplate mongoTemplate,
-        @NonLockGuarded PolicyGenerator policyGenerator,
-        CacheableRepositoryHelper cacheableRepositoryHelper) {
+            MongoTemplate mongoTemplate,
+            @NonLockGuarded PolicyGenerator policyGenerator,
+            CacheableRepositoryHelper cacheableRepositoryHelper) {
         Query query = new Query();
         query.addCriteria(new Criteria()
-            .andOperator(
-                new Criteria(fieldName(QTheme.theme.isSystemTheme)).is(false),
-                new Criteria(FieldName.DELETED).is(false)));
+                .andOperator(
+                        new Criteria(fieldName(QTheme.theme.isSystemTheme)).is(false),
+                        new Criteria(FieldName.DELETED).is(false)));
 
         mongoTemplate.stream(query, Theme.class).forEach(theme -> {
             Query applicationQuery = new Query();
             Criteria themeCriteria = new Criteria(fieldName(QApplication.application.editModeThemeId))
-                .is(theme.getId())
-                .orOperator(
-                    new Criteria(fieldName(QApplication.application.publishedModeThemeId)).is(theme.getId()));
+                    .is(theme.getId())
+                    .orOperator(
+                            new Criteria(fieldName(QApplication.application.publishedModeThemeId)).is(theme.getId()));
 
             List<Application> applications =
-                mongoTemplate.find(applicationQuery.addCriteria(themeCriteria), Application.class);
+                    mongoTemplate.find(applicationQuery.addCriteria(themeCriteria), Application.class);
             // This is an erroneous state where the theme is being used by multiple applications
             if (applications != null && applications.size() > 1) {
                 // Create new themes for the rest of the applications which are copies of the original theme
                 for (int i = 0; i < applications.size(); i++) {
                     Application application = applications.get(i);
                     Set<Policy> themePolicies = policyGenerator.getAllChildPolicies(
-                        application.getPolicies(), Application.class, Theme.class);
+                            application.getPolicies(), Application.class, Theme.class);
 
                     if (i == 0) {
                         // Don't create a new theme for the first application
@@ -1387,54 +1387,54 @@ public class DatabaseChangelog2 {
 
     @ChangeSet(order = "035", id = "add-tenant-admin-permissions-instance-admin", author = "")
     public void addTenantAdminPermissionsToInstanceAdmin(
-        MongoTemplate mongoTemplate, @NonLockGuarded PolicySolution policySolution) {
+            MongoTemplate mongoTemplate, @NonLockGuarded PolicySolution policySolution) {
         Query tenantQuery = new Query();
         tenantQuery.addCriteria(where(fieldName(QTenant.tenant.slug)).is("default"));
         Tenant defaultTenant = mongoTemplate.findOne(tenantQuery, Tenant.class);
 
         Query instanceConfigurationQuery = new Query();
         instanceConfigurationQuery.addCriteria(
-            where(fieldName(QConfig.config1.name)).is(FieldName.INSTANCE_CONFIG));
+                where(fieldName(QConfig.config1.name)).is(FieldName.INSTANCE_CONFIG));
         Config instanceAdminConfiguration = mongoTemplate.findOne(instanceConfigurationQuery, Config.class);
 
         String instanceAdminPermissionGroupId =
-            (String) instanceAdminConfiguration.getConfig().get(DEFAULT_PERMISSION_GROUP);
+                (String) instanceAdminConfiguration.getConfig().get(DEFAULT_PERMISSION_GROUP);
 
         Query permissionGroupQuery = new Query();
         permissionGroupQuery.addCriteria(
-            where(fieldName(QPermissionGroup.permissionGroup.id)).is(instanceAdminPermissionGroupId));
+                where(fieldName(QPermissionGroup.permissionGroup.id)).is(instanceAdminPermissionGroupId));
 
         PermissionGroup instanceAdminPGBeforeChanges =
-            mongoTemplate.findOne(permissionGroupQuery, PermissionGroup.class);
+                mongoTemplate.findOne(permissionGroupQuery, PermissionGroup.class);
 
         // Give read permission to instanceAdminPg to all the users who have been assigned this permission group
         Map<String, Policy> readPermissionGroupPolicyMap = Map.of(
-            READ_PERMISSION_GROUP_MEMBERS.getValue(),
-            Policy.builder()
-                .permission(READ_PERMISSION_GROUP_MEMBERS.getValue())
-                .permissionGroups(Set.of(instanceAdminPGBeforeChanges.getId()))
-                .build());
+                READ_PERMISSION_GROUP_MEMBERS.getValue(),
+                Policy.builder()
+                        .permission(READ_PERMISSION_GROUP_MEMBERS.getValue())
+                        .permissionGroups(Set.of(instanceAdminPGBeforeChanges.getId()))
+                        .build());
         PermissionGroup instanceAdminPG =
-            policySolution.addPoliciesToExistingObject(readPermissionGroupPolicyMap, instanceAdminPGBeforeChanges);
+                policySolution.addPoliciesToExistingObject(readPermissionGroupPolicyMap, instanceAdminPGBeforeChanges);
 
         // Now add admin permissions to the tenant
         Set<Permission> tenantPermissions = TENANT_ADMIN.getPermissions().stream()
-            .map(permission -> new Permission(defaultTenant.getId(), permission))
-            .collect(Collectors.toSet());
+                .map(permission -> new Permission(defaultTenant.getId(), permission))
+                .collect(Collectors.toSet());
         HashSet<Permission> permissions = new HashSet<>(instanceAdminPG.getPermissions());
         permissions.addAll(tenantPermissions);
         instanceAdminPG.setPermissions(permissions);
         mongoTemplate.save(instanceAdminPG);
 
         Map<String, Policy> tenantPolicy =
-            policySolution.generatePolicyFromPermissionGroupForObject(instanceAdminPG, defaultTenant.getId());
+                policySolution.generatePolicyFromPermissionGroupForObject(instanceAdminPG, defaultTenant.getId());
         Tenant updatedTenant = policySolution.addPoliciesToExistingObject(tenantPolicy, defaultTenant);
         mongoTemplate.save(updatedTenant);
     }
 
     @ChangeSet(order = "039", id = "change-readPermissionGroup-to-readPermissionGroupMembers", author = "")
     public void modifyReadPermissionGroupToReadPermissionGroupMembers(
-        MongoTemplate mongoTemplate, @NonLockGuarded PolicySolution policySolution) {
+            MongoTemplate mongoTemplate, @NonLockGuarded PolicySolution policySolution) {
 
         Query query = new Query(Criteria.where("policies.permission").is("read:permissionGroups"));
         Update update = new Update().set("policies.$.permission", "read:permissionGroupMembers");
@@ -1464,7 +1464,7 @@ public class DatabaseChangelog2 {
 
         dropIndexIfExists(mongoTemplate, Workspace.class, "tenantId_deleted");
         ensureIndexes(
-            mongoTemplate, Workspace.class, makeIndex("tenantId", "deleted").named("tenantId_deleted"));
+                mongoTemplate, Workspace.class, makeIndex("tenantId", "deleted").named("tenantId_deleted"));
     }
 
     @ChangeSet(order = "038", id = "add-unique-index-for-uidstring", author = "")
@@ -1481,7 +1481,7 @@ public class DatabaseChangelog2 {
     // multi-tenancy is introduced
     @ChangeSet(order = "040", id = "remove-usage-pulses-for-appsmith-cloud", author = "")
     public void removeUsagePulsesForAppsmithCloud(
-        MongoTemplate mongoTemplate, @NonLockGuarded CommonConfig commonConfig) {
+            MongoTemplate mongoTemplate, @NonLockGuarded CommonConfig commonConfig) {
         if (Boolean.TRUE.equals(commonConfig.isCloudHosting())) {
             mongoTemplate.dropCollection(UsagePulse.class);
         }
