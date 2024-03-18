@@ -191,6 +191,17 @@ function NewApiScreen(props: Props) {
     }
   }, [authApiPlugin, props.createTempDatasourceFromForm]);
 
+  // @Bonita - added lines
+  const [bonitaAuthApiPlugin, setBonitaAuthAPiPlugin] = useState<
+    Plugin | undefined
+  >();
+
+  // @Bonita - added lines
+  useEffect(() => {
+    const plugin = plugins.find((p) => p.name === "Bonita");
+    setBonitaAuthAPiPlugin(plugin);
+  }, [plugins]);
+
   const handleCreateNew = (source: string) => {
     AnalyticsUtil.logEvent("CREATE_DATA_SOURCE_CLICK", {
       source,
@@ -316,6 +327,26 @@ function NewApiScreen(props: Props) {
                     src={getAssetUrl(authApiPlugin.iconLocation)}
                   />
                   <p className="t--plugin-name textBtn">Authenticated API</p>
+                </CardContentWrapper>
+              </ApiCard>
+            )}
+            {bonitaAuthApiPlugin && (
+              <ApiCard
+                className="t--createBonitaAuthApiDatasource"
+                id={bonitaAuthApiPlugin.id}
+                onClick={() =>
+                  handleOnClick(API_ACTION.CREATE_DATASOURCE_FORM, {
+                    pluginId: bonitaAuthApiPlugin.id,
+                  })
+                }
+              >
+                <CardContentWrapper>
+                  <img
+                    alt="Bonita"
+                    className="authApiImage t--authApiImage content-icon"
+                    src="https://cdn3.bonitasoft.com/sites/default/files/Bonitasoft_Logo_Bulle.svg"
+                  />
+                  <p className="t--plugin-name textBtn">Bonita</p>
                 </CardContentWrapper>
               </ApiCard>
             )}

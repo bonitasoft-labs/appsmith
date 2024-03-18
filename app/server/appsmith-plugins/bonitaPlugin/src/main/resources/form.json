@@ -1,0 +1,34 @@
+{
+  "form": [
+    {
+      "sectionName": "General",
+      "id": 1,
+      "children": [
+        {
+          "label": "URL",
+          "configProperty": "datasourceConfiguration.url",
+          "controlType": "INPUT_TEXT",
+          "placeholderText": "http://localhost:8080/bonita",
+          "initialValue": "http://localhost:8080/bonita",
+          "isRequired": true
+        },
+        {
+          "label": "Username",
+          "configProperty": "datasourceConfiguration.authentication.username",
+          "controlType": "INPUT_TEXT",
+          "initialValue": "install",
+          "isRequired": true
+        },
+        {
+          "label": "Password",
+          "configProperty": "datasourceConfiguration.authentication.password",
+          "dataType": "PASSWORD",
+          "controlType": "INPUT_TEXT",
+          "initialValue": "",
+          "isRequired": true,
+          "encrypted": true
+        }
+      ]
+    }
+  ]
+}

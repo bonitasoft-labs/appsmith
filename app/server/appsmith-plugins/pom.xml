@@ -71,6 +71,8 @@
 
         <module>databricksPlugin</module>
 
+        <module>bonitaPlugin</module>
+
     </modules>
 
     <properties>
