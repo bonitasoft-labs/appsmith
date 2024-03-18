@@ -191,10 +191,12 @@ function NewApiScreen(props: Props) {
     }
   }, [authApiPlugin, props.createTempDatasourceFromForm]);
 
+  // @Bonita - added lines
   const [bonitaAuthApiPlugin, setBonitaAuthAPiPlugin] = useState<
     Plugin | undefined
   >();
 
+  // @Bonita - added lines
   useEffect(() => {
     const plugin = plugins.find((p) => p.name === "Bonita");
     setBonitaAuthAPiPlugin(plugin);
