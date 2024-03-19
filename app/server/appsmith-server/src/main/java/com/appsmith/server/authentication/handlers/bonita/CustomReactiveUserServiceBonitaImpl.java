@@ -1,6 +1,5 @@
 package com.appsmith.server.authentication.handlers.bonita;
 
-import com.appsmith.server.configurations.CommonConfig;
 import com.appsmith.server.domains.LoginSource;
 import com.appsmith.server.domains.User;
 import com.appsmith.server.domains.UserState;
@@ -44,7 +43,7 @@ public class CustomReactiveUserServiceBonitaImpl implements ReactiveUserDetailsS
                     log.debug("### createUser with email: {}", username);
                     // @Bonita: Create an admin user if it doesn't exist
                     // With this function, the user is not added to admin mail in CommonConfig
-                    //return userService.userCreate(newUser, true);
+                    // return userService.userCreate(newUser, true);
                     return userService.create(newUser);
                 }))
                 .flatMap(user -> {

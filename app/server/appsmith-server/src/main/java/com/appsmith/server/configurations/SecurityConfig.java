@@ -1,8 +1,8 @@
 package com.appsmith.server.configurations;
 
 import com.appsmith.server.authentication.handlers.*;
-import com.appsmith.server.authentication.handlers.ce.OidcClientInitiatedServerLogoutSuccessHandlerBO;
 import com.appsmith.server.authentication.handlers.AccessDeniedHandler;
+import com.appsmith.server.authentication.handlers.ce.OidcClientInitiatedServerLogoutSuccessHandlerBO;
 import com.appsmith.server.authentication.oauth2clientrepositories.CustomOauth2ClientRepositoryManager;
 import com.appsmith.server.configurations.bonita.BonitaProperties;
 import com.appsmith.server.configurations.bonita.ReactiveAuthenticationManagerBonitaImpl;
@@ -282,42 +282,43 @@ public class SecurityConfig {
                     // @Bonita: only keep OIDC login and remove any other login method and login form
                     // Add Pre Auth rate limit filter before authentication filter
                     // .addFilterBefore(
-                //         new ConditionalFilter(new PreAuth(rateLimitService), Url.LOGIN_URL),
-                //         SecurityWebFiltersOrder.FORM_LOGIN)
-                // .httpBasic(httpBasicSpec -> httpBasicSpec.authenticationFailureHandler(failureHandler))
-                // .formLogin(formLoginSpec -> formLoginSpec
-                //         .authenticationFailureHandler(failureHandler)
-                //         .loginPage(Url.LOGIN_URL)
-                //         .authenticationEntryPoint(authenticationEntryPoint)
-                //         .requiresAuthenticationMatcher(
-                //                 ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, Url.LOGIN_URL))
-                //         .authenticationSuccessHandler(authenticationSuccessHandler)
-                //         .authenticationFailureHandler(authenticationFailureHandler))
-                // For Github SSO Login, check transformation class: CustomOAuth2UserServiceImpl
-                // For Google SSO Login, check transformation class: CustomOAuth2UserServiceImpl
-                .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
-                    .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
-                        reactiveClientRegistrationRepository,
-                        commonConfig,
-                        redirectHelper,
-                        oauth2ClientManager))
-                    .authenticationSuccessHandler(authenticationSuccessHandler))
+                    //         new ConditionalFilter(new PreAuth(rateLimitService), Url.LOGIN_URL),
+                    //         SecurityWebFiltersOrder.FORM_LOGIN)
+                    // .httpBasic(httpBasicSpec -> httpBasicSpec.authenticationFailureHandler(failureHandler))
+                    // .formLogin(formLoginSpec -> formLoginSpec
+                    //         .authenticationFailureHandler(failureHandler)
+                    //         .loginPage(Url.LOGIN_URL)
+                    //         .authenticationEntryPoint(authenticationEntryPoint)
+                    //         .requiresAuthenticationMatcher(
+                    //                 ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, Url.LOGIN_URL))
+                    //         .authenticationSuccessHandler(authenticationSuccessHandler)
+                    //         .authenticationFailureHandler(authenticationFailureHandler))
+                    // For Github SSO Login, check transformation class: CustomOAuth2UserServiceImpl
+                    // For Google SSO Login, check transformation class: CustomOAuth2UserServiceImpl
+                    .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
+                            .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
+                                    reactiveClientRegistrationRepository,
+                                    commonConfig,
+                                    redirectHelper,
+                                    oauth2ClientManager))
+                            .authenticationSuccessHandler(authenticationSuccessHandler))
                     // .oauth2Login(oAuth2LoginSpec -> oAuth2LoginSpec
                     //         .authenticationFailureHandler(failureHandler)
                     //         .authorizationRequestResolver(new CustomServerOAuth2AuthorizationRequestResolver(
-                //                 reactiveClientRegistrationRepository,
-                //                 commonConfig,
-                //                 redirectHelper,
-                //                 oauth2ClientManager))
-                //         .authenticationSuccessHandler(authenticationSuccessHandler)
-                //         .authenticationFailureHandler(authenticationFailureHandler)
-                //         .authorizedClientRepository(new ClientUserRepository(userService, commonConfig))).logout((logout) ->
-                .logout((logout) ->
+                    //                 reactiveClientRegistrationRepository,
+                    //                 commonConfig,
+                    //                 redirectHelper,
+                    //                 oauth2ClientManager))
+                    //         .authenticationSuccessHandler(authenticationSuccessHandler)
+                    //         .authenticationFailureHandler(authenticationFailureHandler)
+                    //         .authorizedClientRepository(new ClientUserRepository(userService,
+                    // commonConfig))).logout((logout) ->
+                    .logout((logout) ->
                             logout.logoutUrl(Url.LOGOUT_URL).logoutSuccessHandler(oidcLogoutSuccessHandler()));
-                // .logout()
-                // .logoutUrl(Url.LOGOUT_URL)
-                // .logoutSuccessHandler(new LogoutSuccessHandler(objectMapper, analyticsService))
-                // .and()
+            // .logout()
+            // .logoutUrl(Url.LOGOUT_URL)
+            // .logoutSuccessHandler(new LogoutSuccessHandler(objectMapper, analyticsService))
+            // .and()
         }
         return authorizeExchangeSpec.and().build();
     }

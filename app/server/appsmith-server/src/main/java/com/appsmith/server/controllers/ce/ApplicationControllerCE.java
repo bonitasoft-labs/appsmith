@@ -144,7 +144,7 @@ public class ApplicationControllerCE extends BaseController<ApplicationService, 
                             writer.write(applicationResource.toString());
                             log.debug("File written successfully: " + exportFilePath);
                         } catch (IOException e) {
-//                            e.printStackTrace();
+                            //                            e.printStackTrace();
                             String mess = "Error writing to file: " + exportFilePath;
                             System.err.println(mess);
                             return new ResponseDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), true, mess);
