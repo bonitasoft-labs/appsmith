@@ -280,7 +280,6 @@ class DatasourceRestAPIEditor extends React.Component<Props> {
               {msg}
             </Callout>
           ))}
-        // @Bonita - modified lines
         {this.props?.pluginName === "Bonita"
           ? this.renderBonitaGeneralSettings()
           : this.renderGeneralSettings()}
