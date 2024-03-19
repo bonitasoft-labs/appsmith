@@ -122,7 +122,7 @@ public class ApplicationControllerCE extends BaseController<ApplicationService, 
             @PathVariable String defaultApplicationId,
             @RequestHeader(name = FieldName.BRANCH_NAME, required = false) String branchName) {
 
-        log.debug("Export application {}", defaultApplicationId);
+        log.debug("Export & publish application {}", defaultApplicationId);
 
         return exportService
                 .getArtifactFile(defaultApplicationId, branchName, APPLICATION)
@@ -144,7 +144,7 @@ public class ApplicationControllerCE extends BaseController<ApplicationService, 
                             writer.write(applicationResource.toString());
                             log.debug("File written successfully: " + exportFilePath);
                         } catch (IOException e) {
-                            //                            e.printStackTrace();
+//                            e.printStackTrace();
                             String mess = "Error writing to file: " + exportFilePath;
                             System.err.println(mess);
                             return new ResponseDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), true, mess);
@@ -152,7 +152,9 @@ public class ApplicationControllerCE extends BaseController<ApplicationService, 
                     }
 
                     return new ResponseDTO<>(HttpStatus.OK.value(), true, null);
-                });
+                })
+                .then(applicationPageService.publish(defaultApplicationId, branchName, true))
+                .thenReturn(new ResponseDTO<>(HttpStatus.OK.value(), true, null));
     }
 
     @JsonView(Views.Public.class)

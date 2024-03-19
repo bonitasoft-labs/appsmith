@@ -344,7 +344,11 @@ public class BonitaPlugin extends BasePlugin {
 
             List<Property> headers = actionConfiguration.getHeaders();
             headers.add(new Property("Cookie", bonitaAuthCookies));
-            String bonitaTokenValue = bonitaToken.split("=")[1];
+            String[] bonitaTokenSplit = bonitaToken.split("=");
+            if (bonitaTokenSplit.length < 2) {
+                return;
+            }
+            String bonitaTokenValue = bonitaTokenSplit[1];
             headers.add(new Property(BONITA_TOKEN, bonitaTokenValue));
         }
 
