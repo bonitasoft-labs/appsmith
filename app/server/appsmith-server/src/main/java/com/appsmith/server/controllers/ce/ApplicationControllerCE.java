@@ -31,6 +31,7 @@ import com.appsmith.server.services.ApplicationSnapshotService;
 import com.appsmith.server.solutions.ApplicationFetcher;
 import com.appsmith.server.themes.base.ThemeService;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,14 +140,14 @@ public class ApplicationControllerCE extends BaseController<ApplicationService, 
                         log.error(mess);
                         return new ResponseDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), true, mess);
                     } else {
+                        ObjectMapper objectMapper = new ObjectMapper();
                         String exportFilePath = exportPath + "/appsmith-app.json";
                         try (BufferedWriter writer = new BufferedWriter(new FileWriter(exportFilePath))) {
-                            writer.write(applicationResource.toString());
+                            writer.write(objectMapper.writeValueAsString(applicationResource));
                             log.debug("File written successfully: " + exportFilePath);
                         } catch (IOException e) {
-                            //                            e.printStackTrace();
                             String mess = "Error writing to file: " + exportFilePath;
-                            System.err.println(mess);
+                            log.error(mess);
                             return new ResponseDTO<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), true, mess);
                         }
                     }
