@@ -4,22 +4,21 @@
 #   generate_info_json.sh: jq
 #   docker of course
 cd app/server
-mvn clean compile -DskipTests
-
-./build.sh -DskipTests
+./build.sh -DskipTests &
 
 cd ../client
 
-yarn install
-yarn build
+yarn && yarn build &
 
 cd packages/rts
 
-yarn install
-yarn build
+yarn && yarn build &
 
 cd ../../../..
 
 scripts/generate_info_json.sh
 
-docker build --build-arg "BASE=appsmith/base-ce:release" -t appsmith/appsmith-ce:latest .
+wait
+
+echo "## Build docker image"
+docker build --build-arg "BASE=appsmith/base-ce:release" -t bonitasoft/appsmith-ce:latest .
