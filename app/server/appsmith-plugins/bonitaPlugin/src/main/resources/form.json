@@ -8,8 +8,8 @@
           "label": "URL",
           "configProperty": "datasourceConfiguration.url",
           "controlType": "INPUT_TEXT",
-          "placeholderText": "http://localhost:8080/bonita",
-          "initialValue": "http://localhost:8080/bonita",
+          "placeholderText": "http://host.docker.internal:8090/bonita",
+          "initialValue": "http://host.docker.internal:8090/bonita",
           "isRequired": true
         },
         {

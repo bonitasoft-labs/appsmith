@@ -12,12 +12,12 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import static com.appsmith.server.migrations.DatabaseChangelog1.installPluginToAllWorkspaces;
 
 @Slf4j
-@ChangeUnit(order = "047", id = "add-bonita-plugin", author = " ")
-public class Migration047AddBonitaPlugin {
+@ChangeUnit(order = "900", id = "add-bonita-plugin", author = " ")
+public class Migration900AddBonitaPlugin {
 
     private final MongoTemplate mongoTemplate;
 
-    public Migration047AddBonitaPlugin(MongoTemplate mongoTemplate) {
+    public Migration900AddBonitaPlugin(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
 
