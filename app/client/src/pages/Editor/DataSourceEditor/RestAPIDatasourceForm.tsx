@@ -180,7 +180,7 @@ class DatasourceRestAPIEditor extends React.Component<Props> {
     if (_.get(authentication, "grantType") === GrantType.AuthorizationCode) {
       if (
         _.get(authentication, "refreshTokenClientCredentialsLocation") ===
-        undefined ||
+          undefined ||
         _.get(authentication, "refreshTokenClientCredentialsLocation") === ""
       ) {
         this.props.change(
@@ -247,9 +247,9 @@ class DatasourceRestAPIEditor extends React.Component<Props> {
       return regex.test(value)
         ? { isValid: true, message: "" }
         : {
-          isValid: false,
-          message: createMessage(INVALID_URL),
-        };
+            isValid: false,
+            message: createMessage(INVALID_URL),
+          };
     }
 
     return { isValid: true, message: "" };
@@ -280,38 +280,9 @@ class DatasourceRestAPIEditor extends React.Component<Props> {
               {msg}
             </Callout>
           ))}
-        {this.props?.pluginName === "Bonita"
-          ? this.renderBonitaGeneralSettings()
-          : this.renderGeneralSettings()}
-        {this.props?.pluginName === "Bonita"
-          ? null
-          : this.renderOauth2AdvancedSettings()}
+        {this.renderGeneralSettings()}
+        {this.renderOauth2AdvancedSettings()}
       </>
-    );
-  };
-
-  // @Bonita - added lines
-  renderBonitaGeneralSettings = () => {
-    this.props.formData.authType = AuthType.basic;
-    return (
-      <section
-        className="t--section-general"
-        data-location-id="section-General"
-        data-testid="section-General"
-      >
-        <FormInputContainer data-location-id={btoa("url")}>
-          {this.renderInputTextControlViaFormControl({
-            configProperty: "url",
-            label: "URL",
-            placeholderText: "https://example.com",
-            dataType: "TEXT",
-            encrypted: false,
-            isRequired: true,
-            fieldValidator: this.urlValidator,
-          })}
-        </FormInputContainer>
-        {this.renderBasic()}
-      </section>
     );
   };
 
@@ -1066,7 +1037,6 @@ const mapStateToProps = (state: AppState, props: any) => {
   };
 };
 
-
 const mapDispatchToProps = (dispatch: any) => {
   return {
     initializeReplayEntity: (id: string, data: any) =>
@@ -1083,9 +1053,13 @@ const mapDispatchToProps = (dispatch: any) => {
   };
 };
 
-
 export type { DatasourceRestApiEditorProps, Props };
-export { FormInputContainer, DatasourceRestAPIEditor, mapStateToProps, mapDispatchToProps };
+export {
+  FormInputContainer,
+  DatasourceRestAPIEditor,
+  mapStateToProps,
+  mapDispatchToProps,
+};
 
 export default connect(
   mapStateToProps,

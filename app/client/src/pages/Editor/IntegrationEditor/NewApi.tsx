@@ -330,7 +330,7 @@ function NewApiScreen(props: Props) {
                 </CardContentWrapper>
               </ApiCard>
             )}
-            { /* @Bonita */ }
+            {/* @Bonita - added lines */}
             {bonitaAuthApiPlugin && (
               <ApiCard
                 className="t--createBonitaAuthApiDatasource"

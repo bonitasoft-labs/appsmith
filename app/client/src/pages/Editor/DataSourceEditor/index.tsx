@@ -763,11 +763,14 @@ class DatasourceEditorRouter extends React.Component<Props, State> {
     const shouldViewMode = viewMode && !isInsideReconnectModal;
     // Check for specific form types first
     return (
+      // @Bonita
+      this.props.pluginName !== "Bonita" &&
       pluginDatasourceForm === DatasourceComponentTypes.RestAPIDatasourceForm &&
       !shouldViewMode
     );
   };
 
+  // @Bonita - added lines
   shouldRenderBonitaAPIForm = () => {
     const { isInsideReconnectModal, pluginDatasourceForm, viewMode } =
       this.props;
@@ -775,7 +778,8 @@ class DatasourceEditorRouter extends React.Component<Props, State> {
     const shouldViewMode = viewMode && !isInsideReconnectModal;
     // Check for specific form types first
     return (
-      pluginDatasourceForm === DatasourceComponentTypes.BonitaDatasourceForm &&
+      this.props.pluginName === "Bonita" &&
+      pluginDatasourceForm === DatasourceComponentTypes.RestAPIDatasourceForm &&
       !shouldViewMode
     );
   };
@@ -799,6 +803,7 @@ class DatasourceEditorRouter extends React.Component<Props, State> {
     } = this.props;
 
     // Check for specific form types first
+    // @Bonita - added lines
     if (this.shouldRenderBonitaAPIForm()) {
       return (
         <>
