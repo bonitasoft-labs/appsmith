@@ -180,7 +180,7 @@ class DatasourceRestAPIEditor extends React.Component<Props> {
     if (_.get(authentication, "grantType") === GrantType.AuthorizationCode) {
       if (
         _.get(authentication, "refreshTokenClientCredentialsLocation") ===
-          undefined ||
+        undefined ||
         _.get(authentication, "refreshTokenClientCredentialsLocation") === ""
       ) {
         this.props.change(
@@ -247,9 +247,9 @@ class DatasourceRestAPIEditor extends React.Component<Props> {
       return regex.test(value)
         ? { isValid: true, message: "" }
         : {
-            isValid: false,
-            message: createMessage(INVALID_URL),
-          };
+          isValid: false,
+          message: createMessage(INVALID_URL),
+        };
     }
 
     return { isValid: true, message: "" };
@@ -1066,6 +1066,7 @@ const mapStateToProps = (state: AppState, props: any) => {
   };
 };
 
+
 const mapDispatchToProps = (dispatch: any) => {
   return {
     initializeReplayEntity: (id: string, data: any) =>
@@ -1081,6 +1082,10 @@ const mapDispatchToProps = (dispatch: any) => {
       dispatch(toggleSaveActionFlag(flag)),
   };
 };
+
+
+export type { DatasourceRestApiEditorProps, Props };
+export { FormInputContainer, DatasourceRestAPIEditor, mapStateToProps, mapDispatchToProps };
 
 export default connect(
   mapStateToProps,

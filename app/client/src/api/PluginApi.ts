@@ -16,6 +16,7 @@ export enum UIComponentTypes {
 }
 
 export enum DatasourceComponentTypes {
+  BonitaDatasourceForm = "BonitaDatasourceForm",
   RestAPIDatasourceForm = "RestAPIDatasourceForm",
   AutoForm = "AutoForm",
 }

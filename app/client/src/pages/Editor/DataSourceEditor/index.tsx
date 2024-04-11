@@ -102,6 +102,7 @@ import {
 } from "@appsmith/utils/BusinessFeatures/permissionPageHelpers";
 import DatasourceTabs from "../DatasourceInfo/DatasorceTabs";
 import DatasourceInformation, { ViewModeWrapper } from "./DatasourceSection";
+import BonitaDatasourceForm from "./BonitaDatasourceForm";
 
 interface ReduxStateProps {
   canDeleteDatasource: boolean;
@@ -767,6 +768,18 @@ class DatasourceEditorRouter extends React.Component<Props, State> {
     );
   };
 
+  shouldRenderBonitaAPIForm = () => {
+    const { isInsideReconnectModal, pluginDatasourceForm, viewMode } =
+      this.props;
+
+    const shouldViewMode = viewMode && !isInsideReconnectModal;
+    // Check for specific form types first
+    return (
+      pluginDatasourceForm === DatasourceComponentTypes.BonitaDatasourceForm &&
+      !shouldViewMode
+    );
+  };
+
   renderForm() {
     const {
       datasource,
@@ -786,6 +799,29 @@ class DatasourceEditorRouter extends React.Component<Props, State> {
     } = this.props;
 
     // Check for specific form types first
+    if (this.shouldRenderBonitaAPIForm()) {
+      return (
+        <>
+          <BonitaDatasourceForm
+            applicationId={this.props.applicationId}
+            currentEnvironment={this.state.filterParams.id}
+            currentEnvironmentName={this.state.filterParams.name}
+            datasource={datasource}
+            datasourceId={datasourceId}
+            formData={formData}
+            formName={formName}
+            hiddenHeader={isInsideReconnectModal}
+            isFormDirty={isFormDirty}
+            isSaving={isSaving}
+            location={location}
+            pageId={pageId}
+            pluginName={pluginName}
+            pluginPackageName={pluginPackageName}
+          />
+          {this.renderSaveDisacardModal()}
+        </>
+      );
+    }
     if (this.shouldRenderRestAPIForm()) {
       return (
         <>
